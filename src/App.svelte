@@ -52,7 +52,7 @@
   <title>Mi Generación en las Urnas | INE 2026</title>
 </svelte:head>
 
-<main class="app-container" role="main">
+<main class="app-container">
   <!-- Header -->
   <header class="app-header">
     <h1 class="app-title">Mi Generación en las Urnas</h1>

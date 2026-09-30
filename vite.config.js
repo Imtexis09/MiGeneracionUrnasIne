@@ -4,19 +4,13 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [svelte()],
+  publicDir: 'public',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
     rollupOptions: {
       output: {
         manualChunks: undefined
-      }
-    },
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
       }
     }
   },

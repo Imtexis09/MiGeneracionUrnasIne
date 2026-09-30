@@ -13,7 +13,9 @@
   let showTable = false;
   
   $: elections = data?.elections || [];
-  $: { intermedias, presidenciales } = separateElectionFamilies(elections);
+  $: electionFamilies = separateElectionFamilies(elections);
+  $: intermedias = electionFamilies.intermedias;
+  $: presidenciales = electionFamilies.presidenciales;
   $: cohortRange = data ? formatCohortRange(data.year_of_birth_min, data.year_of_birth_max) : '';
   
   // Dibujar gráfico cuando cambien los datos
