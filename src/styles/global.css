@@ -4,6 +4,9 @@
  * Mobile-first, peso < 1 MB
  */
 
+/* Importar fuentes de Google Fonts - Debe estar al principio */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap');
+
 /* ========================================
    CSS Reset y Base
    ======================================== */
@@ -38,7 +41,7 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
                'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
   color: var(--color-text);
@@ -52,41 +55,51 @@ body {
    ======================================== */
 
 :root {
-  /* Colores Primarios - Tonos INE ajustados para accesibilidad */
-  --color-primary: #6C1C5C;           /* Morado oscuro (alto contraste) */
-  --color-primary-light: #8B2E7C;     /* Morado medio */
-  --color-primary-dark: #4A1340;      /* Morado muy oscuro */
+  /* Paleta de Colores - Especificaciones Frontend */
+  --color-primary: #D9006C;           /* Magenta INE modernizado */
+  --color-primary-light: #FF1A8C;
+  --color-primary-dark: #A00051;
   
-  --color-secondary: #C84B8A;         /* Rosa/magenta */
-  --color-secondary-light: #E06BA8;
-  --color-secondary-dark: #A03670;
+  --color-secondary: #4F46E5;         /* Indigo 600 */
+  --color-secondary-light: #6366F1;
+  --color-secondary-dark: #4338CA;
   
-  --color-accent: #F4A460;            /* Naranja/coral para highlights */
+  --color-accent: #F59E0B;            /* Amber - Energía, juventud */
+  --color-accent-emerald: #10B981;    /* Emerald - Transición */
+  --color-accent-indigo: #6366F1;     /* Indigo - Estabilidad */
   
-  /* Colores de Texto (Contraste ≥ 4.5:1 sobre blanco) */
-  --color-text: #2D2D2D;              /* Negro cálido */
-  --color-text-secondary: #5A5A5A;    /* Gris oscuro */
-  --color-text-light: #767676;        /* Gris medio (mínimo AA) */
+  /* Colores de Texto sobre fondo oscuro */
+  --color-text: #F8FAFC;              /* Slate 50 - Texto principal */
+  --color-text-secondary: #CBD5E1;    /* Slate 300 */
+  --color-text-muted: #94A3B8;        /* Slate 400 */
   
-  /* Colores de Fondo */
-  --color-bg: #FFFFFF;                /* Blanco */
-  --color-bg-section: #F9F9F9;        /* Gris muy claro */
-  --color-bg-alt: #F0F0F0;            /* Gris claro */
-  --color-bg-warning: #FFF3CD;        /* Amarillo suave (advertencias) */
+  /* Fondos - Tema Oscuro (según imagen) */
+  --color-bg: #0F172A;                /* Slate 900 - Fondo principal */
+  --color-bg-section: #1E293B;        /* Slate 800 - Cards */
+  --color-bg-alt: #334155;            /* Slate 700 - Elementos hover */
+  --color-bg-warning: rgba(245, 158, 11, 0.15); /* Amarillo suave (oscuro) */
   
   /* Colores de UI */
-  --color-border: #DDDDDD;            /* Bordes */
-  --color-focus: #005FCC;             /* Azul para foco (accesibilidad) */
-  --color-error: #C82333;             /* Rojo error */
-  --color-success: #28A745;           /* Verde éxito */
-  
-  /* Gráficos - Líneas de Vida */
-  --color-intermedia: #FF6B6B;        /* Rojo/coral para intermedias */
-  --color-presidencial: #4ECDC4;      /* Turquesa para presidenciales */
-  
+  --color-border: #334155;            /* Slate 700 */
+  --color-focus: #6366F1;             /* Indigo claro para foco */
+  --color-error: #EF4444;             /* Red 500 */
+  --color-success: #10B981;           /* Emerald 500 */
+
   /* Silla Vacía */
-  --color-seat-filled: var(--color-primary);
-  --color-seat-empty: #E8E8E8;
+  --color-seat-filled: #10B981;       /* Participó */
+  --color-seat-empty: #1E293B;        /* No participó */
+
+  /* Gráficos - Grupos de edad (según especificaciones) */
+  --color-chart-18-24: #F59E0B;       /* Amber - 18-24 años */
+  --color-chart-25-29: #10B981;       /* Emerald - 25-29 años */
+  --color-chart-30-plus: #6366F1;     /* Indigo - 30+ años */
+  --color-chart-highlight: #D946EF;   /* Fucsia - Línea destacada */
+  --color-intermedia: #10B981;        /* Emerald - Elecciones intermedias */
+  --color-presidencial: #D9006C;      /* Magenta - Elecciones presidenciales */
+  
+  /* Gradientes */
+  --gradient-primary: linear-gradient(135deg, #D9006C 0%, #4F46E5 100%);
+  --gradient-card: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
   
   /* Espaciado */
   --spacing-xs: 0.25rem;
@@ -109,9 +122,9 @@ body {
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
   
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
   
   /* Transiciones */
   --transition-fast: 150ms ease;
@@ -124,22 +137,26 @@ body {
    ======================================== */
 
 h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--color-primary);
+  color: var(--color-text);
   margin-bottom: var(--spacing-md);
 }
 
 h1 {
   font-size: var(--font-size-3xl);
+  font-weight: 800;
 }
 
 h2 {
   font-size: var(--font-size-2xl);
+  font-weight: 700;
 }
 
 h3 {
   font-size: var(--font-size-xl);
+  font-weight: 600;
 }
 
 p {
@@ -234,7 +251,7 @@ textarea {
   padding: var(--spacing-sm) var(--spacing-md);
   border: 2px solid var(--color-border);
   border-radius: var(--border-radius-sm);
-  background-color: white;
+  background-color: var(--color-bg-section);
   color: var(--color-text);
   transition: border-color var(--transition-fast);
   width: 100%;
@@ -245,7 +262,7 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--color-focus);
-  box-shadow: 0 0 0 3px rgba(0, 95, 204, 0.2);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
 }
 
 input:invalid,
@@ -410,27 +427,27 @@ caption {
 }
 
 .alert-info {
-  background-color: #D1ECF1;
-  border-color: #0C5460;
-  color: #0C5460;
+  background-color: rgba(14, 116, 144, 0.15);
+  border-color: #22D3EE;
+  color: #67E8F9;
 }
 
 .alert-warning {
   background-color: var(--color-bg-warning);
-  border-color: #856404;
-  color: #856404;
+  border-color: #F59E0B;
+  color: #FCD34D;
 }
 
 .alert-error {
-  background-color: #F8D7DA;
+  background-color: rgba(239, 68, 68, 0.15);
   border-color: var(--color-error);
-  color: var(--color-error);
+  color: #FCA5A5;
 }
 
 .alert-success {
-  background-color: #D4EDDA;
+  background-color: rgba(16, 185, 129, 0.15);
   border-color: var(--color-success);
-  color: var(--color-success);
+  color: #6EE7B7;
 }
 
 /* ========================================

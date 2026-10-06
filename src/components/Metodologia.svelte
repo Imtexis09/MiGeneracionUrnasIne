@@ -261,7 +261,7 @@
   .definition {
     margin-bottom: var(--spacing-xl);
     padding: var(--spacing-lg);
-    background-color: white;
+    background-color: var(--color-bg-alt);
     border-left: 4px solid var(--color-accent);
     border-radius: var(--border-radius-sm);
   }

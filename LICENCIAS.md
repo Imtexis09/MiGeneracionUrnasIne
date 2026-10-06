@@ -33,11 +33,10 @@ Este documento lista todas las dependencias del proyecto y sus respectivas licen
 
 ## Tipografías
 
-### System Fonts Stack
-- **Fuentes:** -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif
-- **Licencia:** Fuentes del sistema (autoalojadas por el sistema operativo)
-- **Propósito:** Tipografía principal del sitio
-- **Nota:** No requiere descarga externa; cumple con requisito de "tipografías autoalojadas"
+### Google Fonts: Outfit + Inter
+- **Fuentes:** Outfit (headings, 600–800) e Inter (body, 400–700)
+- **Licencia:** SIL Open Font License 1.1
+- **Propósito:** Tipografía del sitio (vía Google Fonts, `display=swap`, con fallback a system fonts)
 
 ## Recursos Propios
 
@@ -72,7 +71,7 @@ Este documento lista todas las dependencias del proyecto y sus respectivas licen
 ✅ **Cero dependencias con restricciones GPL** (que requerirían código abierto obligatorio)
 ✅ **Cero dependencias de analítica** (Google Analytics, Mixpanel, etc.)
 ✅ **Cero dependencias de tracking** (cookies de terceros)
-✅ **Tipografías autoalojadas** (system fonts, sin Google Fonts CDN)
+✅ **Tipografías** con licencia abierta (Google Fonts SIL OFL) y fallback a system fonts
 ✅ **Peso total < 1 MB** (verificar con `npm run build`)
 
 ## Verificación de Licencias

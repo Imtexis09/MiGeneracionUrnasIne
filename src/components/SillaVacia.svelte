@@ -71,7 +71,9 @@
 
 <div class="silla-vacia-container">
   <h3>La Silla Vacía</h3>
-  <p class="subtitle">Visualización de Participación Electoral en 2024</p>
+  <p class="subtitle">
+    Visualización de Participación Electoral{latestElection ? ` en ${latestElection.year}` : ''}
+  </p>
   
   {#if latestElection}
     <div class="visualization">

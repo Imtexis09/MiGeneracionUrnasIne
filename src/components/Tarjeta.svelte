@@ -1,20 +1,18 @@
 <script>
   import { onMount } from 'svelte';
-  import { getLatestElection, getCohortMidpoint } from '../utils/calculos.js';
+  import { getLatestElection } from '../utils/calculos.js';
   import { formatExactPercent, formatCohortRange } from '../utils/formato.js';
   import { announceToScreenReader } from '../utils/a11y.js';
-  
+
   export let cohortData = null;
-  export let yearOfBirth = null;
   export let entidad = '';
-  
+
   let canvas;
   let isGenerating = false;
-  
+
   $: latestElection = cohortData ? getLatestElection(cohortData.elections) : null;
   $: participacionPct = latestElection ? latestElection.participacion_pct : 0;
   $: cohortRange = cohortData ? formatCohortRange(cohortData.year_of_birth_min, cohortData.year_of_birth_max) : '';
-  $: cohortMidpoint = cohortData ? getCohortMidpoint(cohortData.year_of_birth_min, cohortData.year_of_birth_max) : yearOfBirth;
   
   function generateCard() {
     if (!canvas || !cohortData || !latestElection) return;
@@ -62,8 +60,9 @@
     ctx.font = 'bold 140px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
     ctx.fillText(formatExactPercent(participacionPct), width / 2, 680);
     
+    const electionYear = latestElection.year;
     ctx.font = '42px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
-    ctx.fillText('participó en 2024', width / 2, 750);
+    ctx.fillText(`participó en ${electionYear}`, width / 2, 750);
     
     // Información adicional
     const electionCount = cohortData.elections.length;
@@ -73,7 +72,7 @@
     
     // URL del sitio
     ctx.font = 'bold 38px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
-    ctx.fillText('migenera cionenlasurnas.mx', width / 2, 1040);
+    ctx.fillText('migeneracionenlasurnas.mx', width / 2, 1040);
     
     // Fuente de datos
     ctx.font = '28px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
