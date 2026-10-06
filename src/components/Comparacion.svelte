@@ -1,18 +1,16 @@
 <script>
-  import { compareGenerationsAtSameAge, getCohortMidpoint, getLatestElection } from '../utils/calculos.js';
+  import { compareGenerationsAtSameAge, getLatestElection } from '../utils/calculos.js';
   import { generateComparisonText, formatExactPercent } from '../utils/formato.js';
-  
+
   export let data = null;
   export let allData = null;
   export let yearOfBirth = null;
-  export let entidad = '';
-  
+
   $: latestElection = data ? getLatestElection(data.elections) : null;
-  $: comparison = (data && allData && yearOfBirth && latestElection) 
+  $: comparison = (data && allData && yearOfBirth && latestElection)
     ? compareGenerationsAtSameAge(data, allData, yearOfBirth, latestElection.age_on_election)
     : null;
   $: comparisonText = comparison ? generateComparisonText(comparison) : '';
-  $: cohortMidpoint = data ? getCohortMidpoint(data.year_of_birth_min, data.year_of_birth_max) : yearOfBirth;
 </script>
 
 <div class="comparacion-container">
@@ -84,7 +82,7 @@
     flex-direction: column;
     gap: var(--spacing-lg);
     padding: var(--spacing-xl);
-    background: linear-gradient(135deg, #ffffff 0%, var(--color-bg-section) 100%);
+    background: rgba(255, 255, 255, 0.03);
     border-radius: var(--border-radius-lg);
     border-left: 6px solid var(--color-primary);
     box-shadow: var(--shadow-md);

@@ -62,191 +62,144 @@
 </script>
 
 <div class="selector-container">
-  <div class="selector-intro">
-    <h2>Descubre Tu Generación</h2>
-    <p>Selecciona tu año de nacimiento y tu entidad para conocer la historia de tu generación en las urnas.</p>
-  </div>
-  
-  <form class="selector-form" on:submit|preventDefault>
-    <div class="form-row">
-      <!-- Selector de Año -->
-      <div class="form-group">
-        <label for="year-select">
-          ¿En qué año naciste?
-          <span class="required" aria-label="requerido">*</span>
-        </label>
-        <select
-          id="year-select"
-          bind:value={selectedYear}
-          on:change={handleYearChange}
-          required
-          aria-required="true"
-          aria-invalid={yearError ? 'true' : 'false'}
-          aria-describedby={yearError ? 'year-error' : null}
-        >
-          <option value={null} disabled selected>Selecciona un año</option>
-          {#each years as year}
-            <option value={year}>{year}</option>
-          {/each}
-        </select>
-        
-        {#if yearError}
-          <div class="form-error" id="year-error" role="alert">
-            {yearError}
-          </div>
-        {/if}
-      </div>
+  <form class="mad-libs-form" on:submit|preventDefault>
+    <p class="mad-libs-sentence">
+      <span class="mad-libs-text">Nací en</span>
+      <label for="year-select" class="sr-only">Año de nacimiento</label>
+      <select
+        id="year-select"
+        class="mad-libs-input"
+        bind:value={selectedYear}
+        on:change={handleYearChange}
+        required
+        aria-required="true"
+        aria-invalid={yearError ? 'true' : 'false'}
+        aria-describedby={yearError ? 'year-error' : null}
+      >
+        <option value={null} disabled selected>año</option>
+        {#each years as year}
+          <option value={year}>{year}</option>
+        {/each}
+      </select>
       
-      <!-- Selector de Entidad -->
-      <div class="form-group">
-        <label for="entidad-select">
-          ¿En qué entidad vives?
-          <span class="required" aria-label="requerido">*</span>
-        </label>
-        <select
-          id="entidad-select"
-          bind:value={selectedEntidad}
-          on:change={handleEntidadChange}
-          required
-          aria-required="true"
-        >
-          <option value={null} disabled selected>Selecciona tu estado</option>
-          {#each ENTIDADES as entidad}
-            <option value={entidad.cve}>{entidad.nombre}</option>
-          {/each}
-        </select>
-      </div>
-    </div>
+      <span class="mad-libs-text">y vivo en</span>
+      <label for="entidad-select" class="sr-only">Entidad federativa</label>
+      <select
+        id="entidad-select"
+        class="mad-libs-input mad-libs-input-wide"
+        bind:value={selectedEntidad}
+        on:change={handleEntidadChange}
+        required
+        aria-required="true"
+      >
+        <option value={null} disabled selected>estado</option>
+        {#each ENTIDADES as entidad}
+          <option value={entidad.cve}>{entidad.nombre}</option>
+        {/each}
+      </select>
+    </p>
     
-    <div class="selector-hint">
-      <small>
-        📊 Veremos cómo participó tu generación en las elecciones federales 2009–2024
-      </small>
-    </div>
+    {#if yearError}
+      <div class="form-error" id="year-error" role="alert">
+        {yearError}
+      </div>
+    {/if}
   </form>
 </div>
 
 <style>
   .selector-container {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    color: white;
-    padding: var(--spacing-2xl) var(--spacing-lg);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .mad-libs-form {
+    background: var(--color-bg-section);
+    border: 2px solid var(--color-border);
     border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-lg);
-  }
-  
-  .selector-intro {
-    text-align: center;
-    margin-bottom: var(--spacing-xl);
-  }
-  
-  .selector-intro h2 {
-    color: white;
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
-    margin-bottom: var(--spacing-md);
-  }
-  
-  .selector-intro p {
-    font-size: var(--font-size-lg);
-    opacity: 0.95;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  
-  .selector-form {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .form-row {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-  }
-  
-  @media (min-width: 768px) {
-    .form-row {
-      flex-direction: row;
-    }
-    
-    .form-row .form-group {
-      flex: 1;
-    }
-  }
-  
-  .form-group label {
-    color: white;
-    font-weight: 600;
-    font-size: var(--font-size-lg);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    margin-bottom: var(--spacing-sm);
-  }
-  
-  .required {
-    color: var(--color-accent);
-    font-weight: bold;
-  }
-  
-  select {
-    width: 100%;
-    padding: var(--spacing-md);
-    font-size: var(--font-size-base);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: var(--border-radius-sm);
-    background-color: white;
-    color: var(--color-text);
-    cursor: pointer;
+    padding: 2rem;
     transition: all var(--transition-base);
   }
   
-  select:hover {
-    border-color: rgba(255, 255, 255, 0.6);
+  .mad-libs-form:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(217, 0, 108, 0.1);
   }
   
-  select:focus {
+  .mad-libs-sentence {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1.6;
+  }
+  
+  .mad-libs-text {
+    color: var(--color-text);
+  }
+  
+  .mad-libs-input {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    border: 2px solid var(--color-primary);
+    border-radius: var(--border-radius-sm);
+    background: var(--color-bg);
+    color: var(--color-primary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    min-width: 100px;
+    text-align: center;
+  }
+  
+  .mad-libs-input-wide {
+    min-width: 180px;
+  }
+  
+  .mad-libs-input:hover {
+    background: rgba(217, 0, 108, 0.05);
+    border-color: var(--color-primary-light);
+  }
+  
+  .mad-libs-input:focus {
     outline: none;
-    border-color: white;
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(217, 0, 108, 0.15);
+    background: var(--color-bg);
   }
   
-  select:invalid {
-    border-color: var(--color-error);
+  .mad-libs-input option {
+    background: var(--color-bg-section);
+    color: var(--color-text);
+    padding: 0.5rem;
+  }
+  
+  .mad-libs-input option:disabled {
+    color: var(--color-text-muted);
   }
   
   .form-error {
-    background-color: rgba(200, 35, 51, 0.9);
-    color: white;
-    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+    padding: var(--spacing-md);
     border-radius: var(--border-radius-sm);
     font-size: var(--font-size-sm);
-    margin-top: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-sm);
   }
   
   .form-error::before {
     content: '⚠️';
     font-size: 1.2em;
-  }
-  
-  .selector-hint {
-    text-align: center;
-    margin-top: var(--spacing-lg);
-    opacity: 0.9;
-  }
-  
-  .selector-hint small {
-    font-size: var(--font-size-sm);
-    line-height: 1.4;
-  }
-  
-  /* Accesibilidad: aumentar contraste de opciones */
-  select option {
-    background-color: white;
-    color: var(--color-text);
+    flex-shrink: 0;
   }
   
   /* Animación sutil al cargar */
@@ -271,10 +224,19 @@
     }
   }
   
-  /* Modo oscuro */
-  @media (prefers-color-scheme: dark) {
-    .selector-container {
-      background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-secondary-dark) 100%);
+  /* Responsive */
+  @media (max-width: 640px) {
+    .mad-libs-sentence {
+      font-size: 1.125rem;
+      text-align: center;
+    }
+    
+    .mad-libs-input {
+      min-width: 120px;
+    }
+    
+    .mad-libs-input-wide {
+      min-width: 150px;
     }
   }
 </style>

@@ -6,9 +6,8 @@
   import { getChartAriaAttrs, getAnimationDuration, prefersReducedMotion } from '../utils/a11y.js';
   
   export let data = null;
-  export let yearOfBirth = null;
   export let entidad = '';
-  
+
   let chartContainer;
   let showTable = false;
   
@@ -184,14 +183,16 @@
         .attr('r', 6);
     }
     
-    // Tooltip
+    // Tooltip (limpiar previos para evitar duplicados)
+    d3.selectAll('.chart-tooltip').remove();
     const tooltip = d3.select('body')
       .append('div')
       .attr('class', 'chart-tooltip')
       .style('position', 'absolute')
       .style('visibility', 'hidden')
-      .style('background-color', 'rgba(0, 0, 0, 0.8)')
-      .style('color', 'white')
+      .style('background-color', 'rgba(15, 23, 42, 0.95)')
+      .style('border', '1px solid var(--color-border)')
+      .style('color', 'var(--color-text)')
       .style('padding', '8px 12px')
       .style('border-radius', '4px')
       .style('font-size', '14px')
@@ -304,7 +305,7 @@
   {:else}
     <!-- Tabla accesible -->
     <div class="table-container">
-      <table id="data-table" role="table">
+      <table id="data-table">
         <caption>Datos de Participación Electoral por Año</caption>
         <thead>
           <tr>
@@ -340,53 +341,62 @@
 
 <style>
   .linea-vida-container {
-    padding: var(--spacing-lg);
+    padding: 0;
   }
   
   .chart-header {
-    text-align: center;
     margin-bottom: var(--spacing-xl);
   }
   
   .chart-header h3 {
-    font-size: clamp(1.25rem, 3vw, 1.75rem);
-    color: var(--color-primary);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    color: var(--color-text);
     margin-bottom: var(--spacing-sm);
   }
   
   .chart-subtitle {
     color: var(--color-text-secondary);
     font-size: var(--font-size-base);
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
   }
   
   .btn-toggle-table {
-    padding: var(--spacing-sm) var(--spacing-lg);
-    background-color: var(--color-bg-alt);
-    border: 2px solid var(--color-border);
+    padding: 0.625rem 1.25rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-border);
     border-radius: var(--border-radius-sm);
+    color: var(--color-text-secondary);
     cursor: pointer;
     font-size: var(--font-size-sm);
+    font-weight: 500;
     transition: all var(--transition-base);
   }
   
   .btn-toggle-table:hover,
   .btn-toggle-table:focus {
-    background-color: var(--color-primary);
+    background: var(--color-primary);
     color: white;
     border-color: var(--color-primary);
   }
   
   .chart-container {
     width: 100%;
-    min-height: 400px;
+    min-height: 450px;
     margin: var(--spacing-xl) 0;
+    background: var(--color-bg);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
   }
   
   .table-container {
     width: 100%;
     overflow-x: auto;
     margin: var(--spacing-xl) 0;
+    background: var(--color-bg);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--color-border);
   }
   
   table {
@@ -395,50 +405,61 @@
   }
   
   caption {
-    font-weight: 600;
+    font-weight: 700;
     text-align: left;
-    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-lg);
     font-size: var(--font-size-lg);
-    color: var(--color-primary);
+    color: var(--color-text);
+    font-family: 'Outfit', sans-serif;
   }
   
   th {
-    background-color: var(--color-primary);
-    color: white;
+    background-color: rgba(79, 70, 229, 0.1);
+    color: var(--color-text);
     padding: var(--spacing-md);
     text-align: left;
     font-weight: 600;
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--color-primary);
   }
   
   td {
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
   }
   
   tbody tr:hover {
-    background-color: var(--color-bg-section);
+    background-color: rgba(255, 255, 255, 0.03);
   }
   
   tbody tr:nth-child(even) {
-    background-color: var(--color-bg-alt);
+    background-color: rgba(255, 255, 255, 0.01);
   }
   
   .chart-disclaimer {
     margin-top: var(--spacing-lg);
     padding: var(--spacing-md);
-    background-color: var(--color-bg-warning);
+    background-color: rgba(245, 158, 11, 0.1);
     border-left: 4px solid var(--color-accent);
     border-radius: var(--border-radius-sm);
   }
   
   .chart-disclaimer small {
     font-size: var(--font-size-sm);
-    line-height: 1.5;
-    color: var(--color-text);
+    line-height: 1.6;
+    color: var(--color-text-secondary);
   }
   
   /* Responsive */
   @media (max-width: 768px) {
+    .chart-container {
+      padding: var(--spacing-md);
+      min-height: 350px;
+    }
+    
     table {
       font-size: var(--font-size-sm);
     }
@@ -448,7 +469,7 @@
     }
   }
   
-  /* D3 axis styling */
+  /* D3 axis styling - Tema oscuro */
   :global(.axis-x path),
   :global(.axis-y path),
   :global(.axis-x line),
@@ -458,6 +479,10 @@
   
   :global(.axis-x text),
   :global(.axis-y text) {
+    fill: var(--color-text-secondary);
+  }
+  
+  :global(.legend text) {
     fill: var(--color-text);
   }
 </style>

@@ -38,11 +38,13 @@ Archivos requeridos:
 ### 3. Ejecutar Pipeline de Datos (Python)
 
 ```bash
-cd pipeline
-python pipeline.py
+pip install -r pipeline/requirements.txt
+python pipeline/pipeline.py data/raw data
+python pipeline/cohorts_builder.py data/participacion_edad.json public/data/cohorts.json
 ```
 
-Esto generará `data/cohorts.json` con los datos procesados.
+Esto generará `data/participacion_edad.json` (por año-entidad-edad) y
+`public/data/cohorts.json` (cohortes agregadas que consume el sitio).
 
 ### 4. Iniciar Servidor de Desarrollo
 
