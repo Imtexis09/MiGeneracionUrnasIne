@@ -606,6 +606,16 @@
     transition: background-color var(--transition-base), color var(--transition-base);
   }
 
+  /* Los hijos de un contenedor flex tienen `min-width: auto`, que se resuelve
+     al tamaño mínimo de contenido del elemento. Sin esta red de seguridad,
+     cualquier descendiente con un ancho mínimo grande (por ejemplo una
+     retícula con pistas de 200px) estiraba `main` por encima del viewport y
+     `overflow-x: clip` recortaba el resto sin dejar forma de verlo.
+     `min-width: 0` desactiva ese mínimo automático. */
+  .app-wrapper > * {
+    min-width: 0;
+  }
+
   /* Top Bar */
   .top-bar {
     background-color: var(--color-bg-section);
@@ -781,6 +791,11 @@
     border-radius: 12px;
     padding: 2rem;
     border: 1px solid var(--color-border);
+    /* Es un grid item: su `min-width: auto` equivale al ancho mínimo de su
+       contenido, que aquí fija el `.kpi-value` de 3rem. Sin `min-width: 0` la
+       pista no puede encogerse y las tarjetas de "los otros indicadores"
+       ensanchaban el documento entero al mostrarse. */
+    min-width: 0;
     transition: transform 0.2s, box-shadow 0.2s, background-color var(--transition-base);
   }
 
@@ -1101,7 +1116,12 @@
     opacity: 0.9;
   }
 
-  .how-it-works { list-style: none; counter-reset: paso; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; max-width: 900px; margin: 2rem auto 0; text-align: left; }
+  .how-it-works { list-style: none; counter-reset: paso; display: grid; grid-template-columns: 1fr; gap: 1rem; max-width: 900px; margin: 2rem auto 0; text-align: left; }
+  /* Las 3 columnas de 200px necesitan 632px (3×200 + 2×16 de gap). Por debajo
+     de 768px no caben: con `repeat(auto-fit, minmax(200px, 1fr))` sin
+     condicionar, el mínimo de contenido era 632px y estiraba toda la página.
+     En móvil, una sola columna. Mismo breakpoint `md` que responsive.css. */
+  @media (min-width: 768px) { .how-it-works { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); } }
   .how-it-works li { counter-increment: paso; display: flex; gap: 0.75rem; align-items: flex-start; padding: 1rem; background: var(--color-bg-section); border: 1px solid var(--color-border); border-radius: 10px; color: var(--color-text-secondary); }
   .how-it-works li::before { content: counter(paso); flex-shrink: 0; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: var(--color-primary); color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
   .resumen { max-width: 1200px; margin: 0 auto 1.5rem; padding: 1.5rem; border-radius: 12px; background: var(--color-bg-section); border: 1px solid var(--color-border); border-left: 4px solid var(--color-primary); }
