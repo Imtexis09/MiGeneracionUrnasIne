@@ -7,9 +7,16 @@
   export let yearOfBirth = null;
 
   $: latestElection = data ? getLatestElection(data.elections) : null;
-  $: comparison = (data && allData && yearOfBirth && latestElection)
-    ? compareGenerationsAtSameAge(data, allData, yearOfBirth, latestElection.age_on_election)
-    : null;
+  $: comparison = (() => {
+    try {
+      return (data && allData && yearOfBirth && latestElection)
+        ? compareGenerationsAtSameAge(data, allData, yearOfBirth, latestElection.age_on_election)
+        : null;
+    } catch (e) {
+      console.error('Error en comparación generacional:', e);
+      return null;
+    }
+  })();
   $: comparisonText = comparison ? generateComparisonText(comparison) : '';
 </script>
 
@@ -18,10 +25,6 @@
   
   {#if comparison && comparison.current}
     <div class="comparison-card">
-      <div class="comparison-icon">
-        📊
-      </div>
-      
       <div class="comparison-content">
         <p class="comparison-text" role="article" aria-label="Resultado de comparación generacional">
           {comparisonText}
@@ -53,7 +56,7 @@
     
     <div class="comparison-note">
       <p>
-        💡 <strong>¿Qué significa esto?</strong> Esta comparación muestra cómo tu generación 
+        <strong>¿Qué significa esto?</strong> Esta comparación muestra cómo tu generación 
         participó a una edad específica, comparada con generaciones anteriores cuando tenían 
         la misma edad en elecciones del mismo tipo ({comparison.type}).
       </p>
@@ -93,12 +96,6 @@
       flex-direction: row;
       align-items: flex-start;
     }
-  }
-  
-  .comparison-icon {
-    font-size: 3rem;
-    text-align: center;
-    flex-shrink: 0;
   }
   
   .comparison-content {

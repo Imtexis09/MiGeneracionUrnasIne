@@ -1,5 +1,5 @@
 <script>
-  import { onMount, afterUpdate } from 'svelte';
+  import { onMount, afterUpdate, tick } from 'svelte';
   import * as d3 from 'd3';
   import { separateElectionFamilies } from '../utils/calculos.js';
   import { formatExactPercent, formatCohortRange, getPseudoCohortDisclaimer } from '../utils/formato.js';
@@ -10,16 +10,73 @@
 
   let chartContainer;
   let showTable = false;
+  let puntoFijado = null;   // Punto seleccionado con clic/tap (persistente)
+  let puntoHover = null;    // Punto bajo el cursor (preview)
+
+  // El tooltip muestra el punto fijado; si no hay, el que está bajo el cursor
+  $: puntoActivo = puntoFijado || puntoHover;
+
+  function fijarPunto(d) {
+    puntoFijado = puntoFijado === d ? null : d;
+  }
+
+  function limpiarPunto() {
+    puntoFijado = null;
+    puntoHover = null;
+  }
   
   $: elections = data?.elections || [];
   $: electionFamilies = separateElectionFamilies(elections);
   $: intermedias = electionFamilies.intermedias;
   $: presidenciales = electionFamilies.presidenciales;
   $: cohortRange = data ? formatCohortRange(data.year_of_birth_min, data.year_of_birth_max) : '';
+  $: tipoActivo = puntoActivo
+    ? (puntoActivo.type === 'presidencial' ? 'Elección Presidencial' : 'Elección Intermedia')
+    : '';
   
-  // Dibujar gráfico cuando cambien los datos
+  // Dibujar gráfico cuando cambien los datos o se vuelva a mostrar el lienzo
   $: if (chartContainer && elections.length > 0) {
-    drawChart();
+    programarDibujo(true);
+  }
+
+  let rootEl;
+  let lastInnerWidth = 0;
+  let rafId = 0;
+  let dibujoForzado = false;
+  let resizeObserver;
+
+  function medirAnchoInterno() {
+    const cs = getComputedStyle(chartContainer);
+    const paddingX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+    return Math.max(0, chartContainer.clientWidth - paddingX);
+  }
+
+  /** Dibuja en el siguiente frame.
+   *  - `force`: redibuja aunque el ancho no haya cambiado (datos nuevos o
+   *    lienzo recién montado tras volver de la tabla).
+   *  - Sin `force`: solo redibuja si cambió el ancho disponible (resize). */
+  function programarDibujo(force = false) {
+    if (force) dibujoForzado = true;
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => {
+      if (!chartContainer || elections.length === 0) {
+        dibujoForzado = false;
+        return;
+      }
+      const yaDibujado = d3.select(chartContainer).select('svg').size() > 0;
+      const inner = medirAnchoInterno();
+      const debeDibujar = dibujoForzado || !yaDibujado || Math.abs(inner - lastInnerWidth) >= 1;
+      dibujoForzado = false;
+      if (!debeDibujar) return;
+      lastInnerWidth = inner;
+      drawChart();
+    });
+  }
+
+  // Solo resaltar el punto fijado, sin redibujar todo el gráfico
+  $: if (chartContainer && puntoFijado && elections.length > 0) {
+    d3.selectAll('.dot-intermedia, .dot-presidencial')
+      .classed('is-selected', d => d.year === puntoFijado.year);
   }
   
   function drawChart() {
@@ -30,15 +87,23 @@
     
     // Dimensiones
     const margin = { top: 40, right: 30, bottom: 60, left: 60 };
-    const containerWidth = chartContainer.clientWidth;
-    const width = containerWidth - margin.left - margin.right;
+
+    // clientWidth INCLUYE el padding del contenedor; hay que descontarlo,
+    // porque el SVG vive en el content box. Sin esto el SVG desborda 2×padding
+    // y provoca scroll horizontal en toda la página.
+    const innerWidth = medirAnchoInterno();
+
+    const width = Math.max(0, innerWidth - margin.left - margin.right);
     const height = 400 - margin.top - margin.bottom;
-    
-    // Crear SVG
+    const totalHeight = height + margin.top + margin.bottom;
+
+    // Crear SVG fluido: viewBox + width 100% para que nunca exceda su contenedor
     const svg = d3.select(chartContainer)
       .append('svg')
-      .attr('width', containerWidth)
-      .attr('height', 400)
+      .attr('viewBox', `0 0 ${innerWidth} ${totalHeight}`)
+      .attr('width', '100%')
+      .attr('height', totalHeight)
+      .attr('preserveAspectRatio', 'xMidYMid meet')
       .attr('role', 'img')
       .attr('aria-label', 'Gráfico de línea de vida cívica mostrando participación electoral por año');
     
@@ -132,11 +197,18 @@
         .attr('cy', d => yScale(d.participacion_pct))
         .attr('r', 0)
         .attr('fill', 'var(--color-intermedia)')
-        .attr('stroke', 'white')
+        .attr('stroke', 'var(--color-dot-stroke)')
         .attr('stroke-width', 2)
         .style('cursor', 'pointer')
-        .on('mouseenter', showTooltip)
-        .on('mouseleave', hideTooltip)
+        .on('mouseenter', (e, d) => (puntoHover = d))
+        .on('mouseleave', () => (puntoHover = null))
+        .on('click', (e, d) => fijarPunto(d))
+        .on('keydown', (e, d) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fijarPunto(d); }
+        })
+        .attr('tabindex', 0)
+        .attr('role', 'button')
+        .attr('aria-label', d => `${d.year}, ${d.type === 'presidencial' ? 'elección presidencial' : 'elección intermedia'}. Edad ${d.age_on_election} años. Participación ${formatExactPercent(d.participacion_pct)}`)
         .transition()
         .delay(duration / 2)
         .duration(duration / 2)
@@ -172,135 +244,144 @@
         .attr('cy', d => yScale(d.participacion_pct))
         .attr('r', 0)
         .attr('fill', 'var(--color-presidencial)')
-        .attr('stroke', 'white')
+        .attr('stroke', 'var(--color-dot-stroke)')
         .attr('stroke-width', 2)
         .style('cursor', 'pointer')
-        .on('mouseenter', showTooltip)
-        .on('mouseleave', hideTooltip)
+        .on('mouseenter', (e, d) => (puntoHover = d))
+        .on('mouseleave', () => (puntoHover = null))
+        .on('click', (e, d) => fijarPunto(d))
+        .on('keydown', (e, d) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fijarPunto(d); }
+        })
+        .attr('tabindex', 0)
+        .attr('role', 'button')
+        .attr('aria-label', d => `${d.year}, ${d.type === 'presidencial' ? 'elección presidencial' : 'elección intermedia'}. Edad ${d.age_on_election} años. Participación ${formatExactPercent(d.participacion_pct)}`)
         .transition()
         .delay(duration / 2)
         .duration(duration / 2)
         .attr('r', 6);
     }
     
-    // Tooltip (limpiar previos para evitar duplicados)
+    // Resaltar el punto fijado dentro del SVG
     d3.selectAll('.chart-tooltip').remove();
-    const tooltip = d3.select('body')
-      .append('div')
-      .attr('class', 'chart-tooltip')
-      .style('position', 'absolute')
-      .style('visibility', 'hidden')
-      .style('background-color', 'rgba(15, 23, 42, 0.95)')
-      .style('border', '1px solid var(--color-border)')
-      .style('color', 'var(--color-text)')
-      .style('padding', '8px 12px')
-      .style('border-radius', '4px')
-      .style('font-size', '14px')
-      .style('pointer-events', 'none')
-      .style('z-index', '1000');
-    
-    function showTooltip(event, d) {
-      tooltip
-        .style('visibility', 'visible')
-        .html(`
-          <strong>${d.year}</strong> (${d.type})<br>
-          Edad: ${d.age_on_election} años<br>
-          Participación: ${formatExactPercent(d.participacion_pct)}
-        `)
-        .style('left', (event.pageX + 10) + 'px')
-        .style('top', (event.pageY - 10) + 'px');
-    }
-    
-    function hideTooltip() {
-      tooltip.style('visibility', 'hidden');
-    }
-    
-    // Leyenda
-    const legend = g.append('g')
-      .attr('class', 'legend')
-      .attr('transform', `translate(${width - 200}, -30)`);
-    
-    if (intermedias.length > 0) {
-      const legendIntermedia = legend.append('g');
-      legendIntermedia.append('line')
-        .attr('x1', 0)
-        .attr('x2', 30)
-        .attr('y1', 0)
-        .attr('y2', 0)
-        .attr('stroke', 'var(--color-intermedia)')
-        .attr('stroke-width', 3);
-      legendIntermedia.append('text')
-        .attr('x', 35)
-        .attr('y', 5)
-        .text('Intermedias')
-        .style('font-size', '13px')
-        .style('fill', 'var(--color-text)');
-    }
-    
-    if (presidenciales.length > 0) {
-      const legendPresidencial = legend.append('g')
-        .attr('transform', 'translate(0, 20)');
-      legendPresidencial.append('line')
-        .attr('x1', 0)
-        .attr('x2', 30)
-        .attr('y1', 0)
-        .attr('y2', 0)
-        .attr('stroke', 'var(--color-presidencial)')
-        .attr('stroke-width', 3);
-      legendPresidencial.append('text')
-        .attr('x', 35)
-        .attr('y', 5)
-        .text('Presidenciales')
-        .style('font-size', '13px')
-        .style('fill', 'var(--color-text)');
-    }
   }
   
   onMount(() => {
-    if (elections.length > 0) {
-      drawChart();
+    // Redibujar cuando cambia el ancho disponible (incluye cambios que no
+    // provienen de un resize de la ventana, p. ej. el panel lateral).
+    if (typeof ResizeObserver !== 'undefined' && rootEl) {
+      resizeObserver = new ResizeObserver(() => {
+        if (chartContainer && elections.length > 0) programarDibujo();
+      });
+      resizeObserver.observe(rootEl);
     }
-    
-    // Redibujar en resize
+
     const handleResize = () => {
-      if (chartContainer && elections.length > 0) {
-        drawChart();
-      }
+      if (chartContainer && elections.length > 0) programarDibujo();
     };
-    
+
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      resizeObserver?.disconnect();
+      cancelAnimationFrame(rafId);
+    };
   });
   
-  function toggleTable() {
+  async function toggleTable() {
     showTable = !showTable;
+    // Esperar a que se monte/destruya el lienzo antes de medir y dibujar.
+    await tick();
+    if (!showTable) programarDibujo(true);
   }
 </script>
 
-<div class="linea-vida-container">
+<div class="linea-vida-container" bind:this={rootEl}>
   <div class="chart-header">
     <h3>Participación de tu Generación ({cohortRange})</h3>
     <p class="chart-subtitle">
       {entidad} · Elecciones Federales 2009–2024
     </p>
+
+    <!-- 4.2 Rango de edad implícito por cohorte -->
+    {#if data}
+      <p class="cohort-note">
+        Esta línea sigue a la <strong>generación nacida entre {data.year_of_birth_min} y {data.year_of_birth_max}</strong>:
+        en cada elección se muestra qué porcentaje de ese grupo votó, y qué edad tenía entonces.
+      </p>
+    {/if}
+
     <button 
       class="btn-toggle-table"
       on:click={toggleTable}
       aria-expanded={showTable}
       aria-controls="data-table"
     >
-      {showTable ? '📊 Ver Gráfico' : '📋 Ver Tabla'}
+      {showTable ? 'Ver Gráfico' : 'Ver Tabla'}
     </button>
   </div>
   
   {#if !showTable}
     <!-- Gráfico -->
-    <div 
-      class="chart-container" 
-      bind:this={chartContainer}
-      role="img"
-      aria-label="Gráfico de línea mostrando participación electoral"
-    >
+    <div class="chart-wrapper" role="presentation" on:mouseleave={() => (puntoHover = null)}>
+      <div 
+        class="chart-container" 
+        bind:this={chartContainer}
+        role="img"
+        aria-label="Gráfico de línea mostrando participación electoral. Toca un punto para ver su detalle."
+      >
+      </div>
+
+      <!-- 4.1 Leyenda fija debajo del gráfico -->
+      <div class="chart-legend" role="group" aria-label="Leyenda del gráfico">
+        {#if intermedias.length > 0}
+          <span class="legend-item">
+            <span class="legend-swatch swatch-intermedia" aria-hidden="true"></span>
+            Elecciones intermedias (2009, 2015, 2021)
+          </span>
+        {/if}
+        {#if presidenciales.length > 0}
+          <span class="legend-item">
+            <span class="legend-swatch swatch-presidencial" aria-hidden="true"></span>
+            Elecciones presidenciales (2012, 2018, 2024)
+          </span>
+        {/if}
+        <span class="legend-item">
+          <span class="legend-swatch swatch-dot" aria-hidden="true"></span>
+          Cada punto = una elección
+        </span>
+      </div>
+
+      <!-- 4.3 / 4.4 Tooltip fijo (no sigue al mouse) + label del punto fijado -->
+      {#if puntoActivo}
+        <div class="chart-readout" role="status" aria-live="polite">
+          <button class="readout-close" on:click={limpiarPunto} aria-label="Cerrar detalle del punto">✕</button>
+          <div class="readout-main">
+            <strong>{puntoActivo.year}</strong> · {tipoActivo}
+          </div>
+          <div class="readout-row">
+            <span>Edad en esa elección</span>
+            <strong>{puntoActivo.age_on_election} años</strong>
+          </div>
+          <div class="readout-row">
+            <span>Participaron</span>
+            <strong>{formatExactPercent(puntoActivo.participacion_pct)}</strong>
+          </div>
+          <div class="readout-row">
+            <span>Lista nominal</span>
+            <strong>{puntoActivo.lista_nominal?.toLocaleString('es-MX') ?? '—'}</strong>
+          </div>
+          <p class="readout-hint">
+            {#if puntoFijado}
+              Toca otro punto para compararlo, o ✕ para cerrar.
+            {:else}
+              Toca este punto para dejar el dato fijo.
+            {/if}
+          </p>
+        </div>
+      {:else}
+        <p class="chart-hint">Toca cualquier punto para ver su detalle.</p>
+      {/if}
     </div>
   {:else}
     <!-- Tabla accesible -->
@@ -334,7 +415,7 @@
   <!-- Disclaimer de pseudo-cohorte -->
   <div class="chart-disclaimer">
     <small>
-      ℹ️ {getPseudoCohortDisclaimer()}
+      Nota: {getPseudoCohortDisclaimer()}
     </small>
   </div>
 </div>
@@ -361,10 +442,112 @@
     font-size: var(--font-size-base);
     margin-bottom: var(--spacing-lg);
   }
+
+  /* ===== Fase 4: claridad visual ===== */
+  .cohort-note {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--color-text-secondary);
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    padding: 0.85rem 1rem;
+    margin-bottom: var(--spacing-lg);
+  }
+  .cohort-note strong { color: var(--color-text); }
+
+  .chart-wrapper { position: relative; }
+
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem 1.5rem;
+    margin-top: var(--spacing-md);
+    padding: 0.85rem 1rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+  .legend-item { display: inline-flex; align-items: center; gap: 0.5rem; }
+  .legend-swatch { width: 1.5rem; height: 4px; border-radius: 2px; flex-shrink: 0; }
+  .swatch-intermedia { background: var(--color-intermedia); }
+  .swatch-presidencial { background: var(--color-presidencial); }
+  .swatch-dot {
+    width: 0.75rem; height: 0.75rem; border-radius: 50%;
+    background: var(--color-text-muted); height: 0.75rem;
+  }
+
+  .chart-hint {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-top: 0.75rem;
+  }
+
+  /* Readout fijo (no sigue al mouse) */
+  .chart-readout {
+    position: sticky;
+    bottom: 0.75rem;
+    margin: 1rem auto 0;
+    max-width: 420px;
+    background: var(--color-bg-section);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-primary);
+    border-radius: 10px;
+    padding: 1rem 2.5rem 1rem 1.1rem;
+    box-shadow: var(--shadow-md);
+    text-align: left;
+  }
+  .readout-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0.4rem;
+    border-radius: 6px;
+  }
+  .readout-close:hover { color: var(--color-text); }
+  .readout-close:focus-visible,
+  .btn-toggle-table:focus-visible,
+  :global(.dot-intermedia:focus-visible),
+  :global(.dot-presidencial:focus-visible) {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  .readout-main { font-size: 1.05rem; color: var(--color-text); margin-bottom: 0.6rem; }
+  .readout-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    padding: 0.25rem 0;
+    border-top: 1px solid var(--color-border);
+  }
+  .readout-row strong { color: var(--color-text); }
+  .readout-hint { font-size: 0.8rem; color: var(--color-text-muted); margin: 0.6rem 0 0; }
+
+  :global(.dot-intermedia.is-selected),
+  :global(.dot-presidencial.is-selected) {
+    stroke: var(--color-text);
+    stroke-width: 4px;
+  }
+
+  @media (max-width: 480px) {
+    .chart-readout { position: static; max-width: 100%; }
+  }
   
   .btn-toggle-table {
     padding: 0.625rem 1.25rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-btn-soft);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-sm);
     color: var(--color-text-secondary);
@@ -388,6 +571,18 @@
     background: var(--color-bg);
     border-radius: var(--border-radius-md);
     padding: var(--spacing-lg);
+    /* El SVG se dibuja aquí; si algo excediera el ancho, se recorta con
+       scroll interno en lugar de desbordar toda la página. */
+    overflow-x: auto;
+  }
+  
+  /* El SVG lo crea D3 dinámicamente, por eso necesita :global().
+     width:100% + height:auto mantiene la proporción y evita desbordes. */
+  .chart-container :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
   }
   
   .table-container {
@@ -432,11 +627,11 @@
   }
   
   tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: var(--color-row-hover);
   }
-  
+
   tbody tr:nth-child(even) {
-    background-color: rgba(255, 255, 255, 0.01);
+    background-color: var(--color-row-even);
   }
   
   .chart-disclaimer {
