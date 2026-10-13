@@ -1,33 +1,45 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { getCitationText } from '../utils/formato.js';
-  
+
   const dispatch = createEventDispatcher();
-  
+
   function handleClose() {
     dispatch('close');
   }
-  
+
+  function handleKeydown(event) {
+    if (event.key === 'Escape') {
+      handleClose();
+    }
+  }
+
+  onMount(() => {
+    // Mover el foco al título al abrir (WCAG 2.4.3)
+    const title = document.getElementById('metodologia-title');
+    title?.focus();
+  });
+
   const citationText = getCitationText();
 </script>
 
-<div class="metodologia-container" role="article" aria-labelledby="metodologia-title">
+<article class="metodologia-container" aria-labelledby="metodologia-title">
   <!-- Header con botón de cerrar -->
   <div class="metodologia-header">
-    <h2 id="metodologia-title">Metodología y Fuentes</h2>
-    <button 
-      class="btn-close" 
+    <h2 id="metodologia-title" tabindex="-1">Metodología y Fuentes</h2>
+    <button
+      class="btn-close"
       on:click={handleClose}
       aria-label="Cerrar metodología y volver al contenido principal"
     >
-      ✕
+      <span aria-hidden="true">✕</span>
     </button>
   </div>
   
   <div class="metodologia-content">
     <!-- Sección 1: Fuente de Datos -->
     <section class="metodologia-section">
-      <h3>📊 Fuente de Datos</h3>
+      <h3>Fuente de Datos</h3>
       <p>
         Los datos provienen de los <strong>Conteos Censales de Proceso Constitucional (CCPC)</strong> 
         del Instituto Nacional Electoral (INE), que registran la participación electoral por edad, 
@@ -38,21 +50,21 @@
         <li><strong>Elecciones:</strong> 6 procesos electorales federales</li>
         <li><strong>Cobertura:</strong> 32 entidades federativas de México</li>
       </ul>
-      <p>
-        <a 
-          href="https://www.ine.mx/" 
-          target="_blank" 
+        <p>
+        <a
+          href="https://www.ine.mx/"
+          target="_blank"
           rel="noopener noreferrer"
           aria-label="Visitar sitio oficial del INE (se abre en nueva pestaña)"
         >
-          🔗 Visitar sitio oficial del INE
+          Visitar sitio oficial del INE
         </a>
       </p>
     </section>
     
     <!-- Sección 2: Definiciones Clave -->
     <section class="metodologia-section">
-      <h3>📖 Definiciones Clave</h3>
+      <h3>Definiciones Clave</h3>
       
       <div class="definition">
         <h4>Participación Electoral</h4>
@@ -78,7 +90,7 @@
       <div class="definition">
         <h4>Pseudo-Cohorte</h4>
         <p class="warning">
-          ⚠️ <strong>Importante:</strong> Este análisis NO sigue a las mismas personas entre elecciones. 
+          <strong>Importante:</strong> Este análisis NO sigue a las mismas personas entre elecciones. 
           Se siguen <strong>grupos de edad</strong> en diferentes momentos. La Lista Nominal cambia 
           por altas, bajas y cambios de domicilio.
         </p>
@@ -92,7 +104,7 @@
           <li><strong>Presidenciales:</strong> 2012, 2018, 2024 (participación ~60–65%)</li>
         </ul>
         <p class="warning">
-          ⚠️ Solo se comparan elecciones <strong>dentro de la misma familia</strong>. 
+          Solo se comparan elecciones <strong>dentro de la misma familia</strong>. 
           Comparar 2018 con 2021 sería incorrecto.
         </p>
       </div>
@@ -100,31 +112,31 @@
     
     <!-- Sección 3: Límites del Análisis -->
     <section class="metodologia-section">
-      <h3>⚠️ Límites del Análisis</h3>
+      <h3>Límites del Análisis</h3>
       
       <div class="limits">
         <h4>Lo que SÍ muestra este sitio:</h4>
         <ul class="check-list">
-          <li>✅ Tendencias de participación por cohorte</li>
-          <li>✅ Comparación edad vs. generación</li>
-          <li>✅ Datos agregados oficiales del INE</li>
-          <li>✅ Análisis descriptivo neutral</li>
+          <li>Tendencias de participación por cohorte</li>
+          <li>Comparación edad vs. generación</li>
+          <li>Datos agregados oficiales del INE</li>
+          <li>Análisis descriptivo neutral</li>
         </ul>
         
         <h4>Lo que NO muestra:</h4>
         <ul class="cross-list">
-          <li>❌ Seguimiento de personas individuales</li>
-          <li>❌ Resultados por partido político</li>
-          <li>❌ Predicciones o análisis causal</li>
-          <li>❌ Datos de elecciones locales</li>
-          <li>❌ Segmentación por sexo (inconsistencia histórica)</li>
+          <li>Seguimiento de personas individuales</li>
+          <li>Resultados por partido político</li>
+          <li>Predicciones o análisis causal</li>
+          <li>Datos de elecciones locales</li>
+          <li>Segmentación por sexo (inconsistencia histórica)</li>
         </ul>
       </div>
     </section>
     
     <!-- Sección 4: Cómo Citar -->
     <section class="metodologia-section">
-      <h3>📚 Cómo Citar</h3>
+      <h3>Cómo Citar</h3>
       <div class="citation-box">
         <p>{citationText}</p>
       </div>
@@ -135,28 +147,28 @@
     
     <!-- Sección 5: Privacidad y Transparencia -->
     <section class="metodologia-section">
-      <h3>🔒 Privacidad y Transparencia</h3>
+      <h3>Privacidad y Transparencia</h3>
       <ul>
-        <li>📊 Solo datos agregados del CCPC (públicos)</li>
-        <li>🚫 Cero cookies de rastreo</li>
-        <li>🚫 Cero analítica de terceros</li>
-        <li>🔐 Tu selección NO se guarda ni se envía a servidores</li>
-        <li>💻 Todo el procesamiento ocurre en tu navegador</li>
+        <li>Solo datos agregados del CCPC (públicos)</li>
+        <li>Cero cookies de rastreo</li>
+        <li>Cero analítica de terceros</li>
+        <li>Tu selección NO se guarda ni se envía a servidores</li>
+        <li>Todo el procesamiento ocurre en tu navegador</li>
       </ul>
     </section>
     
     <!-- Sección 6: Accesibilidad -->
     <section class="metodologia-section">
-      <h3>♿ Accesibilidad</h3>
+      <h3>Accesibilidad</h3>
       <p>
         Este sitio cumple con los estándares <strong>WCAG 2.1 nivel AA</strong>:
       </p>
       <ul>
-        <li>✅ Navegación completa por teclado</li>
-        <li>✅ Contraste de color ≥ 4.5:1</li>
-        <li>✅ Texto alternativo en visualizaciones</li>
-        <li>✅ Tablas equivalentes para lectores de pantalla</li>
-        <li>✅ Respeto a preferencias de movimiento reducido</li>
+        <li>Navegación completa por teclado</li>
+        <li>Contraste de color ≥ 4.5:1</li>
+        <li>Texto alternativo en visualizaciones</li>
+        <li>Tablas equivalentes para lectores de pantalla</li>
+        <li>Respeto a preferencias de movimiento reducido</li>
       </ul>
     </section>
   </div>
@@ -167,7 +179,9 @@
       Volver al Contenido Principal
     </button>
   </div>
-</div>
+</article>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <style>
   .metodologia-container {
@@ -197,11 +211,15 @@
     border: none;
     background-color: var(--color-bg-alt);
     color: var(--color-text);
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+    line-height: 1;
+    padding: 0;
     border-radius: 50%;
     cursor: pointer;
     transition: all var(--transition-base);
     flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 0.25rem;
   }
   
   .btn-close:hover,
@@ -209,6 +227,15 @@
     background-color: var(--color-error);
     color: white;
     transform: rotate(90deg);
+  }
+
+  .btn-close:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  #metodologia-title:focus {
+    outline: none;
   }
   
   .metodologia-content {
@@ -297,12 +324,16 @@
   }
   
   .check-list li::before {
-    content: '✅ ';
+    content: '✓';
+    color: var(--color-success);
+    font-weight: 700;
     margin-right: var(--spacing-xs);
   }
-  
+
   .cross-list li::before {
-    content: '❌ ';
+    content: '✗';
+    color: var(--color-error);
+    font-weight: 700;
     margin-right: var(--spacing-xs);
   }
   

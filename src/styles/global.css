@@ -24,6 +24,18 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  /* Red de seguridad: recorta cualquier desborde horizontal en el borde del
+     documento para que no aparezca scroll lateral si algún componente se
+     escapa. Se usa `clip` (no `hidden`) porque NO crea un contenedor de
+     scroll y por tanto no rompe `position: sticky`. */
+  overflow-x: clip;
+}
+
+/* El atributo `hidden` debe ganar a cualquier `display` de autor.
+   Sin esto, reglas como `.kpi-grid { display: grid }` anulan el
+   `display: none` de la hoja del agente y el elemento no se oculta. */
+[hidden] {
+  display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -47,6 +59,22 @@ body {
   color: var(--color-text);
   background-color: var(--color-bg);
   min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+/* Medios responsivos por defecto: ningún recurso embebido debe forzar el
+   ancho del documento. Los iconos SVG con tamaño propio (.btn-social svg,
+   etc.) ganan por especificidad de clase, así que no se deforman. */
+img,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+svg {
+  max-width: 100%;
 }
 
 /* ========================================
@@ -55,6 +83,10 @@ body {
    ======================================== */
 
 :root {
+  color-scheme: dark;
+
+  --color-focus: #FACC15;             /* Amarillo para foco en oscuro */
+
   /* Paleta de Colores - Especificaciones Frontend */
   --color-primary: #D9006C;           /* Magenta INE modernizado */
   --color-primary-light: #FF1A8C;
@@ -71,23 +103,27 @@ body {
   /* Colores de Texto sobre fondo oscuro */
   --color-text: #F8FAFC;              /* Slate 50 - Texto principal */
   --color-text-secondary: #CBD5E1;    /* Slate 300 */
-  --color-text-muted: #94A3B8;        /* Slate 400 */
+  --color-text-muted: #A8B8C8;        /* ≥4.5:1 sobre bg/bg-section/bg-alt (WCAG AA) */
   
   /* Fondos - Tema Oscuro (según imagen) */
   --color-bg: #0F172A;                /* Slate 900 - Fondo principal */
-  --color-bg-section: #1E293B;        /* Slate 800 - Cards */
+  --color-bg-section: #26324B;        /* Cards */
   --color-bg-alt: #334155;            /* Slate 700 - Elementos hover */
   --color-bg-warning: rgba(245, 158, 11, 0.15); /* Amarillo suave (oscuro) */
   
   /* Colores de UI */
   --color-border: #334155;            /* Slate 700 */
-  --color-focus: #6366F1;             /* Indigo claro para foco */
   --color-error: #EF4444;             /* Red 500 */
   --color-success: #10B981;           /* Emerald 500 */
 
   /* Silla Vacía */
   --color-seat-filled: #10B981;       /* Participó */
   --color-seat-empty: #1E293B;        /* No participó */
+
+  /* Filas de tabla */
+  --color-row-hover: rgba(255, 255, 255, 0.03);
+  --color-row-even: rgba(255, 255, 255, 0.01);
+  --color-btn-soft: rgba(255, 255, 255, 0.05);
 
   /* Gráficos - Grupos de edad (según especificaciones) */
   --color-chart-18-24: #F59E0B;       /* Amber - 18-24 años */
@@ -99,7 +135,9 @@ body {
   
   /* Gradientes */
   --gradient-primary: linear-gradient(135deg, #D9006C 0%, #4F46E5 100%);
-  --gradient-card: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+  --gradient-card: linear-gradient(135deg, #26324B 0%, #1A2335 100%);
+  --gradient-hero: linear-gradient(135deg, #D946EF 0%, #4F46E5 50%, #06B6D4 100%);
+  --color-dot-stroke: #FFFFFF;
   
   /* Espaciado */
   --spacing-xs: 0.25rem;
@@ -130,6 +168,80 @@ body {
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 400ms ease;
+}
+
+/* Tema Claro INE */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --color-primary: #D8005F;
+  --color-primary-light: #E6006F;
+  --color-primary-dark: #A8004A;
+
+  --color-secondary: #4F46E5;
+  --color-text: #1A2238;
+  --color-text-secondary: #2D3748;
+  --color-text-muted: #4B5A72;        /* ≥4.5:1 sobre fondos claros (WCAG AA) */
+
+  --color-bg: #F8F9FA;
+  --color-bg-section: #FFFFFF;
+  --color-bg-alt: #E2E8F0;
+  --color-bg-warning: rgba(180, 83, 9, 0.12);
+
+  --color-border: #E2E8F0;
+  --color-focus: #D8005F;
+
+  --gradient-card: linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 100%);
+  --gradient-hero: linear-gradient(135deg, #A8004A 0%, #4F46E5 50%, #0E7490 100%);
+  --color-dot-stroke: #1E293B;
+  --color-seat-empty: #E2E8F0;
+
+  --color-row-hover: rgba(15, 23, 42, 0.04);
+  --color-row-even: rgba(15, 23, 42, 0.02);
+  --color-btn-soft: #F1F5F9;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme="light"] .alert-info {
+  background-color: #E0F2FE;
+  border-color: #0284C7;
+  color: #075985;
+}
+
+:root[data-theme="light"] .alert-warning {
+  background-color: #FEF3C7;
+  border-color: #D97706;
+  color: #92400E;
+}
+
+:root[data-theme="light"] .alert-error {
+  background-color: #FEE2E2;
+  border-color: #DC2626;
+  color: #991B1B;
+}
+
+:root[data-theme="light"] .alert-success {
+  background-color: #D1FAE5;
+  border-color: #059669;
+  color: #065F46;
+}
+
+/* Badges con contraste AA en ambos temas (4.5:1 sobre fondo de tarjeta) */
+:root {
+  --color-badge-success: #34D399;
+  --color-badge-success-bg: rgba(16, 185, 129, 0.2);
+  --color-badge-down: #FCA5A5;
+  --color-badge-down-bg: rgba(239, 68, 68, 0.2);
+}
+
+:root[data-theme="light"] {
+  --color-badge-success: #047857;
+  --color-badge-success-bg: rgba(16, 185, 129, 0.15);
+  --color-badge-down: #B91C1C;
+  --color-badge-down-bg: rgba(239, 68, 68, 0.12);
 }
 
 /* ========================================
@@ -193,6 +305,7 @@ button,
   cursor: pointer;
   transition: all var(--transition-base);
   font-family: inherit;
+  color: inherit;
 }
 
 button:focus,
@@ -292,20 +405,37 @@ label {
    Utilidades de Accesibilidad
    ======================================== */
 
-/* Skip Link (navegación rápida) */
+/* Skip Link (navegación rápida).
+   Oculto con `transform` (no con un offset fijo en px) para que NUNCA
+   asome una franja, sea cual sea la altura real (fuente, zoom, padding).
+   Se revela solo con foco de teclado (:focus-visible).
+   La reducción de movimiento ya está cubierta por el bloque global
+   `@media (prefers-reduced-motion: reduce)` al inicio del archivo. */
 .skip-link {
-  position: absolute;
-  top: -40px;
+  position: fixed;
+  top: 0;
   left: 0;
+  transform: translateY(-150%);
   background: var(--color-primary);
   color: white;
   padding: var(--spacing-sm) var(--spacing-md);
   text-decoration: none;
+  border-radius: 0 0 var(--border-radius-sm) 0;
   z-index: 10000;
+  transition: transform 0.15s ease;
 }
 
-.skip-link:focus {
-  top: 0;
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* El destino del skip-link recibe foco por programa (no es tabulable,
+   `tabindex="-1"`), así que no necesita anillo de foco: evita que
+   Firefox dibuje un contorno alrededor de todo el contenido. */
+#main-content:focus {
+  outline: none;
 }
 
 /* Ocultar visualmente pero accesible para lectores de pantalla */

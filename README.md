@@ -59,6 +59,7 @@ Salidas:
 | `npm run dev` | Servidor de desarrollo con hot reload |
 | `npm run build` | Build de producción en `dist/` |
 | `npm run preview` | Sirve el build localmente en :4173 |
+| `npm test` | Ejecuta la suite de tests (node --test) |
 
 ## Estructura
 

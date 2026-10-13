@@ -20,24 +20,10 @@
     --spacing-2xl: 3.5rem;
   }
   
-  .container {
-    padding: 0 var(--spacing-lg);
-  }
-  
   /* Botones más amplios en tablets */
   button,
   .btn {
     padding: var(--spacing-md) var(--spacing-xl);
-  }
-  
-  /* Formularios: lado a lado */
-  .form-row {
-    display: flex;
-    gap: var(--spacing-md);
-  }
-  
-  .form-row .form-group {
-    flex: 1;
   }
 }
 
@@ -50,27 +36,18 @@
     --font-size-3xl: 3rem;          /* 48px */
   }
   
-  /* Grid de 2 columnas */
-  .grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-xl);
-  }
-  
   /* Tablas: mejor espaciado */
   th,
   td {
     padding: var(--spacing-md) var(--spacing-lg);
   }
   
-  /* Secciones con más espacio */
-  section {
+  /* Secciones con más espacio. Se excluyen `.section-card` porque esos
+     componentes ya aportan su propio padding interior; así se evita el
+     "doble padding" que estrechaba el contenido y aumentaba la presión de
+     ancho mínimo. */
+  section:not(.section-card) {
     padding: var(--spacing-2xl) var(--spacing-xl);
-  }
-  
-  /* Headers más grandes */
-  .app-header {
-    padding: var(--spacing-2xl) var(--spacing-lg);
   }
 }
 
@@ -82,29 +59,6 @@
   :root {
     --font-size-3xl: 3.5rem;        /* 56px */
     --spacing-2xl: 4rem;
-  }
-  
-  /* Grid de 3 columnas */
-  .grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-xl);
-  }
-  
-  /* Navegación horizontal */
-  .nav-horizontal {
-    display: flex;
-    gap: var(--spacing-lg);
-    justify-content: center;
-    align-items: center;
-  }
-  
-  /* Secciones lado a lado */
-  .section-split {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-2xl);
-    align-items: start;
   }
   
   /* Texto más legible en pantallas grandes */
@@ -127,18 +81,10 @@
    ======================================== */
 
 @media (min-width: 1280px) {
-  .container {
-    max-width: 1200px;
-  }
-  
-  /* Más espacio lateral */
-  section {
+  /* Más espacio lateral, con el mismo criterio que en ≥768px:
+     las `.section-card` no reciben padding extra. */
+  section:not(.section-card) {
     padding: var(--spacing-2xl);
-  }
-  
-  /* Gráficos más grandes */
-  .chart-container {
-    min-height: 500px;
   }
 }
 
@@ -148,12 +94,7 @@
 
 @media (orientation: landscape) and (max-height: 600px) {
   /* Reducir padding vertical en landscape móvil */
-  .app-header {
-    padding-top: var(--spacing-md);
-    padding-bottom: var(--spacing-md);
-  }
-  
-  section {
+  section:not(.section-card) {
     padding-top: var(--spacing-lg);
     padding-bottom: var(--spacing-lg);
   }
@@ -237,12 +178,14 @@
    ======================================== */
 
 @media (hover: none) and (pointer: coarse) {
-  /* Aumentar áreas táctiles (min 44x44px WCAG) */
-  button,
+  /* Aumentar el área táctil (WCAG 2.5.5) solo en controles de acción y
+     navegación. Se excluyen los disparadores de tooltip y el cierre del
+     readout, que son iconos pequeños dentro de filas de texto: agrandarlos
+     ensanchaba esas filas y podía provocar scroll horizontal. También se
+     excluyen input/select, que ya definen su altura en los componentes. */
+  button:not(.tooltip-trigger):not(.readout-close),
   .btn,
-  a,
-  input,
-  select {
+  a {
     min-height: 44px;
     min-width: 44px;
   }
@@ -326,78 +269,10 @@
 }
 
 /* ========================================
-   UTILIDADES RESPONSIVE
+   NOTA: Las utilidades responsive genéricas que había aquí
+   (.container, .auto-grid, .grid-2, .grid-3, .hide-mobile,
+   .hide-desktop, .stack-mobile, .section-split, .nav-horizontal,
+   .text-center-mobile, .form-row) no se usaban en ninguna vista.
+   Se eliminaron para no confundir. El estilo del gráfico vive
+   ahora en un único lugar: LineaDeVida.svelte.
    ======================================== */
-
-/* Ocultar en mobile */
-.hide-mobile {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .hide-mobile {
-    display: block;
-  }
-  
-  .hide-desktop {
-    display: none;
-  }
-}
-
-/* Alineación responsive */
-.text-center-mobile {
-  text-align: center;
-}
-
-@media (min-width: 768px) {
-  .text-center-mobile {
-    text-align: left;
-  }
-}
-
-/* Stack en mobile, horizontal en desktop */
-.stack-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-@media (min-width: 768px) {
-  .stack-mobile {
-    flex-direction: row;
-    align-items: center;
-  }
-}
-
-/* Contenedor de gráfico responsive */
-.chart-container {
-  width: 100%;
-  height: auto;
-  min-height: 300px;
-  position: relative;
-}
-
-@media (min-width: 768px) {
-  .chart-container {
-    min-height: 400px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .chart-container {
-    min-height: 500px;
-  }
-}
-
-/* Grid responsive automático */
-.auto-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-lg);
-}
-
-@media (min-width: 768px) {
-  .auto-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
-}

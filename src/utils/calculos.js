@@ -134,11 +134,12 @@ export function compareGenerationsAtSameAge(cohortData, allData, yearOfBirth, ta
   
   const currentType = currentElection.type;
   const currentYear = currentElection.year;
-  
+
   // Buscar generaciones anteriores a la misma edad en elecciones de la misma familia
   const comparisons = [];
-  
-  for (let prevYear of ELECCIONES[currentType + 's']) {
+  const familyKey = currentType === 'intermedia' ? 'intermedias' : 'presidenciales';
+
+  for (let prevYear of (ELECCIONES[familyKey] || [])) {
     if (prevYear >= currentYear) continue;
     
     // Calcular qué año de nacimiento tendría alguien con targetAge en prevYear
