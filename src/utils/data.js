@@ -75,25 +75,20 @@ export async function loadData() {
       throw new Error('Formato de datos inválido: falta metadata');
     }
     
-    console.log(`✓ Datos cargados: ${data.cohorts.length} registros de cohortes`);
     return data;
     
   } catch (error) {
     console.error('Error cargando datos:', error);
-    
-    // Datos de respaldo para desarrollo (mock)
-    return createMockData();
-  }
-}
 
-/**
- * Obtener nombre de entidad por clave
- * @param {string} cve - Clave de entidad (01-32)
- * @returns {string} Nombre de la entidad
- */
-export function getEntidadNombre(cve) {
-  const entidad = ENTIDADES.find(e => e.cve === cve);
-  return entidad ? entidad.nombre : 'Desconocida';
+    // Respaldo SOLO en desarrollo para no bloquear el trabajo local.
+    // En producción se propaga el error para que `App.svelte` muestre el estado
+    // de error, evitando publicar datos simulados sin aviso (regla del hackathon).
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
+      return createMockData();
+    }
+
+    throw error;
+  }
 }
 
 /**
@@ -107,7 +102,7 @@ export function validateYearOfBirth(year) {
   }
   
   if (year < YEAR_RANGE.min) {
-    return { valid: false, message: `El año debe ser mayor a ${YEAR_RANGE.min}` };
+    return { valid: false, message: `El año de nacimiento debe ser mayor a ${YEAR_RANGE.min}. Revisa el año que ingresaste e intenta de nuevo.` };
   }
   
   if (year > YEAR_RANGE.max) {
@@ -186,22 +181,3 @@ function createMockData() {
   };
 }
 
-/**
- * Verificar si una elección es presidencial
- * @param {number} year - Año de elección
- * @returns {boolean}
- */
-export function isPresidencial(year) {
-  return ELECCIONES.presidenciales.includes(year);
-}
-
-/**
- * Obtener tipo de elección
- * @param {number} year - Año de elección
- * @returns {string} 'presidencial' | 'intermedia' | 'desconocida'
- */
-export function getElectionType(year) {
-  if (ELECCIONES.presidenciales.includes(year)) return 'presidencial';
-  if (ELECCIONES.intermedias.includes(year)) return 'intermedia';
-  return 'desconocida';
-}

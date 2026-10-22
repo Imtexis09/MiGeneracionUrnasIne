@@ -4,7 +4,6 @@ export default {
   preprocess: vitePreprocess(),
   compilerOptions: {
     // Habilitar accesibilidad warnings
-    accessors: false,
-    dev: false
+    accessors: false
   }
 }

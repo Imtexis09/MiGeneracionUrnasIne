@@ -42,13 +42,13 @@
       <h3>Fuente de Datos</h3>
       <p>
         Los datos provienen de los <strong>Conteos Censales de Proceso Constitucional (CCPC)</strong> 
-        del Instituto Nacional Electoral (INE), que registran la participación electoral por edad, 
-        entidad y año electoral.
+        del Instituto Nacional Electoral (INE), que registran cuántas personas van a votar por edad, 
+        estado y año electoral.
       </p>
       <ul>
         <li><strong>Período:</strong> 2009–2024</li>
         <li><strong>Elecciones:</strong> 6 procesos electorales federales</li>
-        <li><strong>Cobertura:</strong> 32 entidades federativas de México</li>
+        <li><strong>Cobertura:</strong> 32 estados de México</li>
       </ul>
         <p>
         <a
@@ -67,19 +67,19 @@
       <h3>Definiciones Clave</h3>
       
       <div class="definition">
-        <h4>Participación Electoral</h4>
+        <h4>Cuántas personas van a votar</h4>
         <p class="formula">
           <code>Participación (%) = 100 × (Sí Votaron) / (Sí Votaron + No Votaron)</code>
         </p>
         <p>
-          Se calcula <strong>solo entre personas en Lista Nominal</strong>, no como porcentaje 
+          Se calcula <strong>solo entre personas registradas para votar</strong>, no como porcentaje 
           de la población total. Los "No Especificados" (NS) se excluyen del denominador 
           siguiendo la fórmula oficial del INE.
         </p>
       </div>
       
       <div class="definition">
-        <h4>Generación (Cohorte)</h4>
+        <h4>Tu generación (grupo de edad)</h4>
         <p>
           Una generación agrupa personas nacidas en un <strong>rango de 3 años consecutivos</strong> 
           (ejemplo: 1998–2000). Este agrupamiento absorbe la imprecisión de ±1 año en la edad 
@@ -88,11 +88,11 @@
       </div>
       
       <div class="definition">
-        <h4>Pseudo-Cohorte</h4>
+        <h4>Pseudo-cohorte (grupos de edad)</h4>
         <p class="warning">
           <strong>Importante:</strong> Este análisis NO sigue a las mismas personas entre elecciones. 
-          Se siguen <strong>grupos de edad</strong> en diferentes momentos. La Lista Nominal cambia 
-          por altas, bajas y cambios de domicilio.
+          Se siguen <strong>grupos de edad</strong> en diferentes momentos. La lista de personas 
+          registradas para votar cambia por altas, bajas y cambios de domicilio.
         </p>
       </div>
       
@@ -117,7 +117,7 @@
       <div class="limits">
         <h4>Lo que SÍ muestra este sitio:</h4>
         <ul class="check-list">
-          <li>Tendencias de participación por cohorte</li>
+          <li>Tendencias de cuántas personas van a votar por grupo de edad</li>
           <li>Comparación edad vs. generación</li>
           <li>Datos agregados oficiales del INE</li>
           <li>Análisis descriptivo neutral</li>
@@ -155,6 +155,11 @@
         <li>Tu selección NO se guarda ni se envía a servidores</li>
         <li>Todo el procesamiento ocurre en tu navegador</li>
       </ul>
+      <p>
+        Esa imagen se dibuja en tu navegador y se descarga como una
+        <strong>imagen vertical de 1080 × 1350 px</strong> (formato de historias de Instagram).
+        Ese detalle técnico no aparece en la historia para no cargar el texto de la interfaz.
+      </p>
     </section>
     
     <!-- Sección 6: Accesibilidad -->
@@ -196,21 +201,20 @@
     align-items: center;
     margin-bottom: var(--spacing-xl);
     padding-bottom: var(--spacing-lg);
-    border-bottom: 3px solid var(--color-primary);
+    border-bottom: 3px solid var(--accent-pink);
   }
   
   .metodologia-header h2 {
     font-size: clamp(1.75rem, 4vw, 2.5rem);
-    color: var(--color-primary);
+    color: var(--accent-pink);
     margin: 0;
-  }
-  
+  }  
   .btn-close {
     width: 44px;
     height: 44px;
     border: none;
-    background-color: var(--color-bg-alt);
-    color: var(--color-text);
+    background-color: var(--bg-card-hover);
+    color: var(--text-primary);
     font-size: 1.25rem;
     line-height: 1;
     padding: 0;
@@ -223,19 +227,20 @@
   }
   
   .btn-close:hover,
-  .btn-close:focus {
-    background-color: var(--color-error);
+  .btn-close:focus-visible {
+    background-color: var(--status-error);
     color: white;
     transform: rotate(90deg);
   }
 
   .btn-close:focus-visible {
-    outline: 3px solid var(--color-focus);
+    outline: 3px solid var(--border-focus);
     outline-offset: 2px;
   }
 
-  #metodologia-title:focus {
-    outline: none;
+  #metodologia-title:focus-visible {
+    outline: 3px solid var(--border-focus);
+    outline-offset: 2px;
   }
   
   .metodologia-content {
@@ -245,27 +250,27 @@
   .metodologia-section {
     margin-bottom: var(--spacing-2xl);
     padding: var(--spacing-xl);
-    background-color: var(--color-bg-section);
-    border-radius: var(--border-radius-lg);
+    background-color: var(--bg-card);
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
   }
   
   .metodologia-section h3 {
     font-size: clamp(1.25rem, 3vw, 1.5rem);
-    color: var(--color-primary);
+    color: var(--accent-pink);
     margin-bottom: var(--spacing-lg);
   }
   
   .metodologia-section h4 {
     font-size: var(--font-size-lg);
-    color: var(--color-text);
+    color: var(--text-primary);
     margin-top: var(--spacing-lg);
     margin-bottom: var(--spacing-sm);
   }
   
   .metodologia-section p {
     line-height: 1.7;
-    color: var(--color-text);
+    color: var(--text-primary);
     margin-bottom: var(--spacing-md);
   }
   
@@ -280,7 +285,7 @@
   }
   
   .metodologia-section a {
-    color: var(--color-primary);
+    color: var(--accent-pink);
     font-weight: 600;
     text-decoration: underline;
   }
@@ -288,29 +293,29 @@
   .definition {
     margin-bottom: var(--spacing-xl);
     padding: var(--spacing-lg);
-    background-color: var(--color-bg-alt);
-    border-left: 4px solid var(--color-accent);
-    border-radius: var(--border-radius-sm);
+    background-color: var(--bg-card-hover);
+    border-left: 4px solid var(--accent-amber);
+    border-radius: var(--radius-sm);
   }
   
   .formula {
     padding: var(--spacing-md);
-    background-color: var(--color-bg-alt);
-    border-radius: var(--border-radius-sm);
+    background-color: var(--bg-card-hover);
+    border-radius: var(--radius-sm);
     font-family: 'Courier New', monospace;
     overflow-x: auto;
   }
   
   .formula code {
-    color: var(--color-primary);
+    color: var(--accent-pink);
     font-size: var(--font-size-sm);
   }
   
   .warning {
     padding: var(--spacing-md);
-    background-color: var(--color-bg-warning);
-    border-left: 4px solid var(--color-accent);
-    border-radius: var(--border-radius-sm);
+    background-color: var(--bg-warning);
+    border-left: 4px solid var(--accent-amber);
+    border-radius: var(--radius-sm);
   }
   
   .limits h4 {
@@ -325,23 +330,23 @@
   
   .check-list li::before {
     content: '✓';
-    color: var(--color-success);
+    color: var(--status-success);
     font-weight: 700;
     margin-right: var(--spacing-xs);
   }
 
   .cross-list li::before {
     content: '✗';
-    color: var(--color-error);
+    color: var(--status-error);
     font-weight: 700;
     margin-right: var(--spacing-xs);
   }
   
   .citation-box {
     padding: var(--spacing-lg);
-    background-color: var(--color-bg-alt);
-    border-left: 4px solid var(--color-primary);
-    border-radius: var(--border-radius-sm);
+    background-color: var(--bg-card-hover);
+    border-left: 4px solid var(--accent-pink);
+    border-radius: var(--radius-sm);
     font-style: italic;
   }
   
@@ -352,7 +357,7 @@
   .metodologia-footer {
     text-align: center;
     padding-top: var(--spacing-xl);
-    border-top: 2px solid var(--color-border);
+    border-top: 2px solid var(--border-subtle);
   }
   
   /* Responsive */
@@ -388,7 +393,7 @@
     }
     
     .btn-close:hover,
-    .btn-close:focus {
+    .btn-close:focus-visible {
       transform: none;
     }
   }

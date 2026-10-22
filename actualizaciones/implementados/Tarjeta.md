@@ -73,7 +73,11 @@
 | 5.1 | `role="region"` + label en el wrapper del canvas | `Tarjeta.svelte` | "Vista previa de tarjeta 1080×1350" |
 | 5.2 | `title` descriptivo en botón de descarga | `Tarjeta.svelte` | Incluir "generada localmente" |
 | 5.3 | Respetar `prefers-reduced-motion` en animaciones | `Tarjeta.svelte` | Ya parcialmente implementado |
-| 5.4 | Opción "Generar sin animaciones" | `Tarjeta.svelte` | Para usuarios con sensibilidad |
+| 5.4 | Opción "Generar sin animaciones" | `Tarjeta.svelte` | ⚠️ **DESCARTADA** — redundante con 5.3 (ver nota) |
+
+> **Nota (13-oct-2026) — tarea 5.4 descartada por redundante.**
+> Su finalidad declarada ("para usuarios con sensibilidad") es exactamente la que cubre la tarea 5.3 vía la media query `prefers-reduced-motion`, el mecanismo estándar (WCAG 2.3.3). Además, la implementación resultó engañosa: el checkbox `"Generar sin animaciones"` (`Tarjeta.svelte:31-35, 320-328, 507-519`) **no desactiva** el spinner (`animation: spin`, `:482`), el `pulse` (`:626`) ni las transiciones (`:470, :554`); solo elimina ~2 frames (~16–50 ms) de espera entre las etapas de progreso, un ahorro imperceptible. Duplica 5.3, regenera la tarjeta al marcar/desmarcar (`on:change={() => generateCard()}`) y añade carga cognitiva.
+> **Acción:** eliminar el checkbox y su estado (`sinAnimaciones`), simplificar `respiroUsar` a `prefersReducedMotion() ? noop : respiro` y borrar el CSS `.motion-toggle`. Detalle en `actualizaciones/implementados/correcciones131026.md`.
 
 ---
 
@@ -125,7 +129,7 @@
 - [ ] 4.1–4.4 (flujo de compartir)
 
 **Sprint 3 (≈2 h) — Toques finales**
-- [ ] 5.3–5.4 (reduced motion)
+- [ ] 5.3 (reduced motion) — 5.4 descartada (redundante con 5.3)
 - [ ] Validación completa (`npm test`, `npm run build`, prueba manual)
 
 **Total estimado:** 10 horas de trabajo

@@ -17,14 +17,18 @@
     years = generateYearRange(YEAR_RANGE.min, YEAR_RANGE.max);
   });
 
-  // ===== Fase 1: Indicador de pasos requeridos =====
-  $: pasoActual = selectedYear && selectedEntidad ? 3 : (selectedYear || selectedEntidad ? 2 : 1);
+  // ===== Flujo: año primero, estado después =====
+  // El select de entidad empieza deshabilitado; solo se activa cuando el año
+  // es válido. El mapa es solo visual: no sirve para seleccionar.
   $: pasosCompletados = (selectedYear && !yearError ? 1 : 0) + (selectedEntidad ? 1 : 0);
+  // El mensaje pide la siguiente acción en vez de numerar campos: es una
+  // invitación, no una etiqueta de formulario.
   $: mensajePaso = pasosCompletados === 0
-    ? 'Paso 1 de 2 — Año de nacimiento'
+    ? 'Empieza por tu año de nacimiento'
     : pasosCompletados === 1
-      ? (selectedYear && !yearError ? 'Paso 2 de 2 — Entidad' : 'Paso 1 de 2 — Año de nacimiento')
-      : 'Listo — revisa tus resultados abajo';
+      ? (selectedYear && !yearError ? 'Ahora elige tu estado' : 'Empieza por tu año de nacimiento')
+      : 'Ya está: mira tu resultado';
+  $: entidadDisabled = !(selectedYear && !yearError);
   
   // Manejar cambio de año
   function handleYearChange(event) {
@@ -64,7 +68,7 @@
     
     // Anunciar a lectores de pantalla
     announceToScreenReader(
-      `Selección actualizada: nacido en ${selectedYear}, entidad ${entidad?.nombre}`,
+      `Selección actualizada: nacido en ${selectedYear}, estado ${entidad?.nombre}`,
       'polite'
     );
   }
@@ -119,11 +123,14 @@
         <select
           id="entidad-select"
           class="mad-libs-input"
+          class:disabled={entidadDisabled}
           bind:value={selectedEntidad}
           on:change={handleEntidadChange}
+          disabled={entidadDisabled}
           required
           aria-required="true"
           aria-describedby="selector-help steps-current"
+          aria-disabled={entidadDisabled}
         >
           <option value={null} disabled selected>Elige tu estado</option>
           {#each ENTIDADES as entidad}
@@ -138,13 +145,13 @@
     {:else}
       <p class="selector-help" id="selector-help" aria-live="polite">
         {#if !selectedYear && !selectedEntidad}
-          Elige las dos opciones y los resultados aparecen solos. No guardamos tus datos.
+          Elige las dos opciones y tu historia aparece al instante. No guardamos tus datos.
         {:else if !selectedYear}
-          Paso 1 de 2 completado ({pasosCompletados}/2). Falta elegir tu año de nacimiento.
+          Falta tu año de nacimiento.
         {:else if !selectedEntidad}
-          Paso 1 de 2 completado ({pasosCompletados}/2). Falta elegir tu estado.
+          Falta tu estado.
         {:else}
-          ¡Listo! 2 de 2 pasos completados. Mira tus resultados abajo. Puedes cambiar tu respuesta cuando quieras.
+          Listo. Puedes cambiar tu respuesta cuando quieras.
         {/if}
       </p>
     {/if}
@@ -158,15 +165,15 @@
   }
   
   .mad-libs-form {
-    background: var(--color-bg-section);
-    border: 2px solid var(--color-border);
-    border-radius: var(--border-radius-lg);
+    background: var(--bg-card);
+    border: 2px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
     padding: 2rem;
     transition: all var(--transition-base);
   }
   
   .mad-libs-form:focus-within {
-    border-color: var(--color-primary);
+    border-color: var(--accent-pink);
     box-shadow: 0 0 0 4px rgba(217, 0, 108, 0.1);
   }
   
@@ -176,10 +183,10 @@
     font-size: clamp(1rem, 2.5vw, 1.25rem);
     font-weight: 600;
     font-family: 'Outfit', sans-serif;
-    border: 2px solid var(--color-primary);
-    border-radius: var(--border-radius-sm);
-    background: var(--color-bg);
-    color: var(--color-primary);
+    border: 2px solid var(--accent-pink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-main);
+    color: var(--accent-pink);
     cursor: pointer;
     transition: all var(--transition-base);
     min-width: 100px;
@@ -188,32 +195,35 @@
   
   .mad-libs-input:hover {
     background: rgba(217, 0, 108, 0.05);
-    border-color: var(--color-primary-light);
+    border-color: var(--accent-pink-light);
   }
   
   .mad-libs-input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 4px rgba(217, 0, 108, 0.15);
-    background: var(--color-bg);
+    border-color: var(--accent-pink);
+    background: var(--bg-main);
+  }
+
+  .mad-libs-input:focus-visible {
+    outline: 3px solid var(--border-focus);
+    outline-offset: 2px;
   }
   
   .mad-libs-input option {
-    background: var(--color-bg-section);
-    color: var(--color-text);
+    background: var(--bg-card);
+    color: var(--text-primary);
     padding: 0.5rem;
   }
   
   .mad-libs-input option:disabled {
-    color: var(--color-text-muted);
+    color: var(--text-muted);
   }
   
   .form-error {
     background-color: rgba(239, 68, 68, 0.1);
-    border: 1px solid var(--color-error);
-    color: var(--color-error);
+    border: 1px solid var(--status-error);
+    color: var(--status-error);
     padding: var(--spacing-md);
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--radius-sm);
     font-size: var(--font-size-sm);
     margin-top: var(--spacing-lg);
     display: flex;
@@ -258,23 +268,34 @@
 
   .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; text-align: left; }
   .field { display: flex; flex-direction: column; gap: 0.5rem; }
-  .field-label { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 1.05rem; color: var(--color-text); }
-  .step-num { display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--color-primary); color: #fff; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
-  .fields .mad-libs-input { width: 100%; min-height: 52px; font-size: 1.125rem; text-align: left; color: var(--color-text); }
-  .selector-help { margin-top: 1.25rem; text-align: center; font-size: 0.95rem; color: var(--color-text-secondary); }
+  .field-label { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 1.05rem; color: var(--text-primary); }
+  .step-num { display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--accent-pink); color: #fff; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
+  .fields .mad-libs-input { width: 100%; min-height: 52px; font-size: 1.125rem; text-align: left; color: var(--text-primary); }
+  .fields .mad-libs-input.disabled {
+    background: var(--bg-card-hover);
+    border-color: var(--border-subtle);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  .fields .mad-libs-input.disabled:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-subtle);
+  }
+  .selector-help { margin-top: 1.25rem; text-align: center; font-size: 0.95rem; color: var(--text-secondary); }
   @media (max-width: 640px) { .fields { grid-template-columns: 1fr; } .mad-libs-form { padding: 1.25rem; } }
 
   /* ===== Fase 1: indicador de pasos ===== */
   .steps-header { margin-bottom: 1.5rem; display: grid; gap: 0.6rem; }
-  .steps-title { font-size: 1rem; color: var(--color-text-secondary); }
-  .steps-title strong { color: var(--color-text); }
+  .steps-title { font-size: 1rem; color: var(--text-secondary); }
+  .steps-title strong { color: var(--text-primary); }
   .steps-counter { display: flex; align-items: baseline; gap: 0.5rem; }
-  .counter-value { font-size: 1.75rem; font-weight: 700; color: var(--color-primary); line-height: 1; }
-  .counter-label { font-size: 0.9rem; color: var(--color-text-secondary); }
+  .counter-value { font-size: 1.75rem; font-weight: 700; color: var(--accent-pink); line-height: 1; }
+  .counter-label { font-size: 0.9rem; color: var(--text-secondary); }
   .steps-bar { height: 8px; border-radius: 999px; background: rgba(217, 0, 108, 0.15); overflow: hidden; }
-  .steps-bar-fill { display: block; height: 100%; background: var(--color-primary); border-radius: 999px; transition: width var(--transition-base); }
-  .steps-current { font-size: 0.95rem; font-weight: 600; color: var(--color-primary); }
+  .steps-bar-fill { display: block; height: 100%; background: var(--accent-pink); border-radius: 999px; transition: width var(--transition-base); }
+  .steps-current { font-size: 0.95rem; font-weight: 600; color: var(--accent-pink); }
   @media (prefers-reduced-motion: reduce) { .steps-bar-fill { transition: none; } }
 
-  .step-num.done { background: var(--color-success, #16a34a); }
+  .step-num.done { background: var(--status-success, #16a34a); }
 </style>

@@ -1,0 +1,92 @@
+/* ==========================================================================
+   SOPORTE WCAG 2.1 AA — MOVIMIENTO REDUCIDO, CONTRASTE Y TABLAS ALTERNATIVAS
+   ========================================================================== */
+
+/* 1. Anulación de efectos parallax y animaciones para usuarios sensibles.
+   Se fusiona con el bloque ya presente en global.css; se mantiene aquí como
+   utilidad explícita del módulo de accesibilidad. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .parallax-layer-bg,
+  .parallax-layer-fg {
+    transform: none !important;
+    transition: opacity 0.2s ease !important;
+  }
+}
+
+/* 2. Anillo de foco accesible (navegación por teclado). WCAG 2.4.7
+   Token del design system (--border-focus: cyan en oscuro, rosa en claro).
+   Nunca color hardcodeado ni !important: el token resuelve el tema. */
+:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 4px;
+}
+
+/* 3. Ocultamiento semántico para lectores de pantalla. WCAG 1.3.1 / 4.1.2 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 4. Tabla alternativa para gráficas D3. WCAG 1.3.1 */
+.data-table-fallback {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.data-table-fallback th,
+.data-table-fallback td {
+  border: 1px solid var(--border-subtle);
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.data-table-fallback th {
+  background-color: var(--bg-card);
+  font-weight: 600;
+}
+
+/* 5. Utilidades de doble codificación visual (no solo color). WCAG 1.4.1 */
+.visually-hidden-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 6. Micro-animaciones respetuosas con el límite de parpadeo (máx. 3 Hz).
+   Ninguna animación de este archivo supera los 5 segundos ni parpadea. */
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes gentle-pulse {
+    from { opacity: 1; }
+    to { opacity: 1; }
+  }
+}

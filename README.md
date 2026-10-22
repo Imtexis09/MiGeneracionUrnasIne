@@ -39,7 +39,9 @@ npm run dev        # http://localhost:5173
 
 ## Pipeline de datos
 
-Los 6 archivos `.zip` del CCPC del INE van en `data/raw/` (ya incluidos en el repo de trabajo):
+Los 6 archivos `.zip` del CCPC del INE van en `data/raw/`. **No se incluyen en el
+repositorio** por su tamaño (~50–100 MB); deben descargarse de la fuente oficial
+(ver `data/raw/INSTRUCCIONES_ARCHIVOS_ZIP.md`):
 
 ```bash
 pip install -r pipeline/requirements.txt
@@ -65,23 +67,37 @@ Salidas:
 
 ```
 ├── src/
-│   ├── components/       # Selector, LineaDeVida, Comparacion, SillaVacia, Tarjeta, Metodologia
+│   ├── components/       # Selector, LineaDeVida, Comparacion, SillaVacia, Tarjeta, Metodologia, WelcomeTour
 │   ├── utils/            # data, calculos, formato, a11y
 │   ├── styles/           # global.css, responsive.css
 │   ├── App.svelte
 │   └── main.js
-├── public/data/          # cohorts.json (datos reales del sitio)
-├── data/                 # participacion_edad.json, reporte_validacion.md, raw/
+├── public/
+│   ├── data/             # cohorts.json, reporte_validacion.md (datos reales del sitio)
+│   └── images/           # logos e icono de pestaña
+├── data/                 # participacion_edad.json, reporte_validacion.md, raw/ (ZIP, no versionados)
 ├── pipeline/             # pipeline.py, cohorts_builder.py, requirements.txt
+├── tests/                # calculos.test.mjs, regresion_bind_this.test.mjs
+├── images/               # Recursos gráficos de origen
+├── Frontend/             # Especificaciones y plan de desarrollo del frontend
 ├── PRD/                  # Documentos de requisitos (v1–v3)
 ├── Historial/            # Bitácoras de desarrollo, deploy y pruebas
-└── actualizaciones/      # Planes de actualización (V1, ...)
+├── actualizaciones/      # Planes de actualización (ver índice README.md)
+├── dist/                 # Build de producción (generado por `npm run build`)
+├── index.html
+├── vercel.json           # Configuración de despliegue
+└── .gitignore
 ```
 
 ## Privacidad y neutralidad
 
-- Cero cookies, cero analítica de terceros, cero localStorage.
-- Todo el procesamiento ocurre en el navegador del usuario.
+- Cero cookies y cero analítica de terceros.
+- Sin `localStorage`. Solo se usa `sessionStorage` de forma efímera para no repetir
+  el recorrido guiado dentro de la misma sesión; se borra al cerrar la pestaña.
+- Todo el procesamiento de datos ocurre en el navegador del usuario.
+- **Fuentes**: las tipografías (Inter, Outfit) se cargan desde Google Fonts. Es la
+  única petición a un tercero y no implica cookies ni rastreo. (Pendiente: autoalojarlas
+  para eliminar la dependencia externa — ver `actualizaciones/pendientes/PENDIENTES.md`.)
 - Lenguaje descriptivo, sin resultados por partido ni llamados a votar.
 
 ## Documentación
@@ -90,7 +106,7 @@ Salidas:
 - `METODOLOGIA.md` — metodología de cohortes y definiciones.
 - `LICENCIAS.md` — inventario de dependencias y datos.
 - `Historial/` — bitácora de desarrollo, correcciones y pruebas de escritorio.
-- `actualizaciones/V1.md` — plan de actualización profesional.
+- `actualizaciones/README.md` — índice de planes (implementados y pendientes).
 
 ## Entregables del Hackathon
 

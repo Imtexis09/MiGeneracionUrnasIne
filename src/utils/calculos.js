@@ -60,20 +60,6 @@ export function findCohortData(allData, yearOfBirth, entidadCve) {
 }
 
 /**
- * Filtrar elecciones por familia (intermedias o presidenciales)
- * @param {Array} elections - Array de elecciones de una cohorte
- * @param {string} type - 'intermedia' | 'presidencial' | 'todas'
- * @returns {Array} Elecciones filtradas
- */
-export function filterElectionsByType(elections, type = 'todas') {
-  if (!elections || !Array.isArray(elections)) return [];
-  
-  if (type === 'todas') return elections;
-  
-  return elections.filter(e => e.type === type);
-}
-
-/**
  * Separar elecciones en dos familias
  * @param {Array} elections - Array de elecciones
  * @returns {Object} { intermedias: Array, presidenciales: Array }
@@ -173,44 +159,12 @@ export function compareGenerationsAtSameAge(cohortData, allData, yearOfBirth, ta
 }
 
 /**
- * Calcular diferencia en puntos porcentuales
- * @param {number} value1 - Primer valor
- * @param {number} value2 - Segundo valor
- * @returns {number} Diferencia
- */
-export function calculateDifference(value1, value2) {
-  return value1 - value2;
-}
-
-/**
  * Validar si hay suficientes datos (LN > 1000)
  * @param {Object} election - Datos de una elección
  * @returns {boolean}
  */
 export function hasValidSampleSize(election) {
   return election && election.lista_nominal >= 1000;
-}
-
-/**
- * Obtener participación nacional para un año
- * @param {Object} meta - Metadata del JSON
- * @param {number} year - Año de elección
- * @returns {number|null} Participación nacional
- */
-export function getNacionalParticipacion(meta, year) {
-  if (!meta || !meta.nacional_participacion) return null;
-  
-  return meta.nacional_participacion[year.toString()] || null;
-}
-
-/**
- * Calcular punto medio de cohorte
- * @param {number} min - Año mínimo de cohorte
- * @param {number} max - Año máximo de cohorte
- * @returns {number} Año medio
- */
-export function getCohortMidpoint(min, max) {
-  return Math.floor((min + max) / 2);
 }
 
 /**

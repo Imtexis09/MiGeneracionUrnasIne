@@ -41,7 +41,9 @@ Una vez copiados los archivos ZIP, ejecuta el pipeline de procesamiento:
 python pipeline/pipeline.py
 ```
 
-Esto descomprimirá los archivos, validará los datos y generará `data/cohorts.json` listo para el sitio web.
+Esto leerá los archivos, validará los datos y generará `data/participacion_edad.json`
+(agregado año × entidad × edad). Después, `cohorts_builder.py` transforma ese archivo
+en `public/data/cohorts.json`, que es el que consume el sitio web.
 
 ## Notas Importantes
 

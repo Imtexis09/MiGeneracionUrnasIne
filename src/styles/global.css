@@ -2,203 +2,219 @@
  * Estilos Globales - Mi Generación en las Urnas
  * WCAG 2.1 AA compliant
  * Mobile-first, peso < 1 MB
+ *
+ * Sistema de tokens: los nombres siguen la convención del plan de estilos
+ * nuevos (fondo/texto/acento/estado/borde). Todo el código consume estas
+ * variables; no hay colores "sueltos" fuera de este archivo.
  */
 
-/* Importar fuentes de Google Fonts - Debe estar al principio */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap');
+/* Módulo de accesibilidad WCAG 2.1 AA (motion, focus, sr-only, tablas alt.) */
+@import url('./accessibility.css');
 
-/* ========================================
-   CSS Reset y Base
-   ======================================== */
+/**
+ * Tipografías (autoalojadas: public/fonts/)
+ *
+ * Bricolage Grotesque (display) + IBM Plex Sans (texto y UI).
+ *
+ * - Bricolage: una grotesca variable con gesto editorial; se usa SOLO en
+ *   titulares y cifras grandes, donde aporta identidad sin Leonardo.
+ * - IBM Plex Sans: sans de sistema institucional, de altísima legibilidad en
+ *   pantalla, diseñada para datos y señalética. Sustituye a Inter para que
+ *   la interfaz no dependa de la tipografía por defecto de todo el mundo.
+ *
+ * Se sirven desde el propio sitio (sin Google Fonts) por compatibilidad con
+ * iOS/Safari (Canvas y CORS) y por privacidad: cero peticiones a terceros.
+ */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* Bricolage Grotesque — variable, pesos 400–800, subconjunto latin */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 400 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/bricolage-grotesque.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
 }
 
-html {
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: smooth;
-  /* Red de seguridad: recorta cualquier desborde horizontal en el borde del
-     documento para que no aparezca scroll lateral si algún componente se
-     escapa. Se usa `clip` (no `hidden`) porque NO crea un contenedor de
-     scroll y por tanto no rompe `position: sticky`. */
-  overflow-x: clip;
+/* IBM Plex Sans — variable, pesos 400–700, subconjunto latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
 }
 
-/* El atributo `hidden` debe ganar a cualquier `display` de autor.
-   Sin esto, reglas como `.kpi-grid { display: grid }` anulan el
-   `display: none` de la hoja del agente y el elemento no se oculta. */
-[hidden] {
-  display: none !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
-               'Helvetica Neue', Arial, sans-serif;
-  line-height: 1.6;
-  color: var(--color-text);
-  background-color: var(--color-bg);
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow-x: clip;
-}
-
-/* Medios responsivos por defecto: ningún recurso embebido debe forzar el
-   ancho del documento. Los iconos SVG con tamaño propio (.btn-social svg,
-   etc.) ganan por especificidad de clase, así que no se deforman. */
-img,
-video,
-canvas {
-  max-width: 100%;
-  height: auto;
-}
-
-svg {
-  max-width: 100%;
+/* IBM Plex Sans — itálica, peso 400, subconjunto latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
 }
 
 /* ========================================
-   Variables CSS (Paleta de Colores)
-   Contraste WCAG AA: ≥ 4.5:1
+   Tokens del sistema de diseño
    ======================================== */
 
 :root {
   color-scheme: dark;
 
-  --color-focus: #FACC15;             /* Amarillo para foco en oscuro */
+  /* ---- Fondos ---- */
+  --bg-main: #0B0F19;              /* Fondo principal */
+  --bg-card: #161F33;              /* Tarjetas y paneles */
+  --bg-card-hover: #1E2942;        /* Estados hover / superficies alternativas */
+  --bg-warning: rgba(245, 158, 11, 0.15);
 
-  /* Paleta de Colores - Especificaciones Frontend */
-  --color-primary: #D9006C;           /* Magenta INE modernizado */
-  --color-primary-light: #FF1A8C;
-  --color-primary-dark: #A00051;
-  
-  --color-secondary: #4F46E5;         /* Indigo 600 */
-  --color-secondary-light: #6366F1;
-  --color-secondary-dark: #4338CA;
-  
-  --color-accent: #F59E0B;            /* Amber - Energía, juventud */
-  --color-accent-emerald: #10B981;    /* Emerald - Transición */
-  --color-accent-indigo: #6366F1;     /* Indigo - Estabilidad */
-  
-  /* Colores de Texto sobre fondo oscuro */
-  --color-text: #F8FAFC;              /* Slate 50 - Texto principal */
-  --color-text-secondary: #CBD5E1;    /* Slate 300 */
-  --color-text-muted: #A8B8C8;        /* ≥4.5:1 sobre bg/bg-section/bg-alt (WCAG AA) */
-  
-  /* Fondos - Tema Oscuro (según imagen) */
-  --color-bg: #0F172A;                /* Slate 900 - Fondo principal */
-  --color-bg-section: #26324B;        /* Cards */
-  --color-bg-alt: #334155;            /* Slate 700 - Elementos hover */
-  --color-bg-warning: rgba(245, 158, 11, 0.15); /* Amarillo suave (oscuro) */
-  
-  /* Colores de UI */
-  --color-border: #334155;            /* Slate 700 */
-  --color-error: #EF4444;             /* Red 500 */
-  --color-success: #10B981;           /* Emerald 500 */
+  /* ---- Tipografía y contraste (WCAG AA) ---- */
+  --text-primary: #F9FAFB;         /* Ratio 15:1+ sobre --bg-main */
+  --text-secondary: #CBD5E1;       /* Ratio 7:1+ sobre --bg-main */
+  --text-muted: #94A3B8;           /* Notas al pie y leyendas (mínimo 14px) */
 
-  /* Silla Vacía */
-  --color-seat-filled: #10B981;       /* Participó */
-  --color-seat-empty: #1E293B;        /* No participó */
+  /* ---- Colores de acento ---- */
+  --accent-pink: #E01E5A;          /* Rosa INE refinado */
+  --accent-pink-light: #FF1A8C;
+  --accent-purple: #7C3AED;        /* Violeta para degradados */
+  --accent-purple-dark: #5B21B6;
+  --accent-cyan: #0284C7;
+  --accent-amber: #F59E0B;         /* Energía / advertencias */
 
-  /* Filas de tabla */
-  --color-row-hover: rgba(255, 255, 255, 0.03);
-  --color-row-even: rgba(255, 255, 255, 0.01);
-  --color-btn-soft: rgba(255, 255, 255, 0.05);
+  /* ---- Estados ---- */
+  --status-voted: #10B981;         /* Verde esmeralda: sí votó */
+  --status-absent: #475569;        /* Gris pizarra: no votó */
+  --status-error: #EF4444;
+  --status-success: #10B981;
 
-  /* Gráficos - Grupos de edad (según especificaciones) */
-  --color-chart-18-24: #F59E0B;       /* Amber - 18-24 años */
-  --color-chart-25-29: #10B981;       /* Emerald - 25-29 años */
-  --color-chart-30-plus: #6366F1;     /* Indigo - 30+ años */
-  --color-chart-highlight: #D946EF;   /* Fucsia - Línea destacada */
-  --color-intermedia: #10B981;        /* Emerald - Elecciones intermedias */
-  --color-presidencial: #D9006C;      /* Magenta - Elecciones presidenciales */
-  
-  /* Gradientes */
-  --gradient-primary: linear-gradient(135deg, #D9006C 0%, #4F46E5 100%);
-  --gradient-card: linear-gradient(135deg, #26324B 0%, #1A2335 100%);
-  --gradient-hero: linear-gradient(135deg, #D946EF 0%, #4F46E5 50%, #06B6D4 100%);
-  --color-dot-stroke: #FFFFFF;
-  
-  /* Espaciado */
+  /* ---- Focus y bordes ---- */
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-focus: #38BDF8;         /* Indicador de foco para teclado */
+  /* Hairline: filete estructural (reglas, separadores). No sustituye al
+     borde de un control: codifica jerarquía, no decora. */
+  --line: rgba(255, 255, 255, 0.16);
+
+  /* ---- Radios (jerarquía, no un único radio para todo) ---- */
+  --radius-sm: 6px;                /* Controles e inputs */
+  --radius-md: 12px;               /* Paneles y tarjetas */
+  --radius-lg: 16px;               /* Tarjeta protagonista */
+
+  /* ---- Fuentes ---- */
+  --font-base: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+               'Helvetica Neue', Arial, sans-serif;
+  --font-heading: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* ---- Escala tipográfica ---- */
+  --tracking-tight: -0.02em;       /* Titulares: optically tighter */
+  --tracking-wide: 0.04em;         /* Etiquetas cortas, nunca mayúsculas largas */
+
+  /* ---- Superficie de dato (bloques de cifras) ----
+     Un panel de dato es un dato, no una postal: en modo oscuro va sobre una
+     superficie profunda de tinta y en modo claro sobre su equivalente claro.
+     Se declara aquí (y no como color suelto en el componente) para que ambos
+     temas resuelvan el mismo bloque sin reescribirlo. */
+  --panel-bg: linear-gradient(160deg, #1A2238 0%, #0F172A 100%);
+
+  /* ---- Gradientes ---- */
+  --gradient-accent: linear-gradient(135deg, var(--accent-pink) 0%, var(--accent-purple) 100%);
+  --gradient-card: linear-gradient(135deg, var(--bg-card) 0%, #131C2E 100%);
+  /* El logotipo de marca: dos paradas de la paleta institucional. Nada de
+     arcoíris azul-violeta: el acento tiene que ser el de la marca. */
+  --gradient-hero: linear-gradient(100deg, var(--accent-pink) 0%, var(--accent-purple) 100%);
+
+  /* ---- Sombras ---- */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+
+  /* ---- Espaciado ---- */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
-  
-  /* Tipografía */
-  --font-size-sm: 0.875rem;           /* 14px */
-  --font-size-base: 1rem;             /* 16px */
-  --font-size-lg: 1.125rem;           /* 18px */
-  --font-size-xl: 1.25rem;            /* 20px */
-  --font-size-2xl: 1.5rem;            /* 24px */
-  --font-size-3xl: 2rem;              /* 32px */
-  
-  /* Bordes y Sombras */
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-  
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
-  
-  /* Transiciones */
+
+  /* ---- Escala tipográfica ---- */
+  --font-size-sm: 0.875rem;        /* 14px */
+  --font-size-base: 1rem;          /* 16px */
+  --font-size-lg: 1.125rem;        /* 18px */
+  --font-size-xl: 1.25rem;         /* 20px */
+  --font-size-display: clamp(2rem, 5vw, 2.75rem);
+  --font-size-hero: clamp(1.9rem, 6vw, 3.4rem);
+
+  /* ---- Transiciones ---- */
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
-  --transition-slow: 400ms ease;
+
+  /* ---- Gráficos ---- */
+  --chart-intermedia: #10B981;
+  --chart-presidencial: #E01E5A;
+  --chart-dot-stroke: #FFFFFF;
+
+  /* ---- Tablas y superficies ---- */
+  --row-hover: rgba(255, 255, 255, 0.03);
+  --row-even: rgba(255, 255, 255, 0.01);
+  --btn-soft: rgba(255, 255, 255, 0.05);
 }
 
 /* Tema Claro INE */
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --color-primary: #D8005F;
-  --color-primary-light: #E6006F;
-  --color-primary-dark: #A8004A;
+  --bg-main: #F8F9FA;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #E2E8F0;
+  --bg-warning: rgba(180, 83, 9, 0.12);
 
-  --color-secondary: #4F46E5;
-  --color-text: #1A2238;
-  --color-text-secondary: #2D3748;
-  --color-text-muted: #4B5A72;        /* ≥4.5:1 sobre fondos claros (WCAG AA) */
+  --text-primary: #1A2238;
+  --text-secondary: #2D3748;
+  --text-muted: #4B5A72;          /* ≥4.5:1 sobre fondos claros (WCAG AA) */
 
-  --color-bg: #F8F9FA;
-  --color-bg-section: #FFFFFF;
-  --color-bg-alt: #E2E8F0;
-  --color-bg-warning: rgba(180, 83, 9, 0.12);
+  --accent-pink: #D8005F;
+  --accent-pink-light: #E6006F;
 
-  --color-border: #E2E8F0;
-  --color-focus: #D8005F;
+  --accent-purple: #4F46E5;
+  --accent-purple-dark: #4338CA;
+
+  --accent-cyan: #0284C7;
+  --accent-amber: #D97706;
+
+  --status-voted: #047857;          /* Verde esmeralda legible sobre fondo claro */
+  --status-absent: #E2E8F0;
+  --status-error: #DC2626;
+  --status-success: #047857;
+
+  --border-subtle: #E2E8F0;
+  --line: #D8DEE9;
+  --border-focus: #D8005F;
 
   --gradient-card: linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 100%);
-  --gradient-hero: linear-gradient(135deg, #A8004A 0%, #4F46E5 50%, #0E7490 100%);
-  --color-dot-stroke: #1E293B;
-  --color-seat-empty: #E2E8F0;
+  --gradient-hero: linear-gradient(100deg, var(--accent-pink) 0%, var(--accent-purple) 100%);
 
-  --color-row-hover: rgba(15, 23, 42, 0.04);
-  --color-row-even: rgba(15, 23, 42, 0.02);
-  --color-btn-soft: #F1F5F9;
+  /* Equivalente claro del panel de dato: superficie clara para que el texto
+     (--text-primary, oscuro en este tema) mantenga el contraste AA. */
+  --panel-bg: linear-gradient(160deg, #FFFFFF 0%, #E2E8F0 100%);
+
+  --chart-dot-stroke: #1E293B;
+  --chart-presidencial: #D8005F;
+  /* Override AA del gráfico: el verde de elecciones intermedias sobre fondo
+     claro (#F8F9FA) no alcanzaba el 3:1 requerido para gráficos (WCAG 1.4.11). */
+  --chart-intermedia: #047857;
+
+  --row-hover: rgba(15, 23, 42, 0.04);
+  --row-even: rgba(15, 23, 42, 0.02);
+  --btn-soft: #F1F5F9;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -229,19 +245,73 @@ svg {
   color: #065F46;
 }
 
-/* Badges con contraste AA en ambos temas (4.5:1 sobre fondo de tarjeta) */
-:root {
-  --color-badge-success: #34D399;
-  --color-badge-success-bg: rgba(16, 185, 129, 0.2);
-  --color-badge-down: #FCA5A5;
-  --color-badge-down-bg: rgba(239, 68, 68, 0.2);
+/* ========================================
+   CSS Reset y Base
+   ======================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-:root[data-theme="light"] {
-  --color-badge-success: #047857;
-  --color-badge-success-bg: rgba(16, 185, 129, 0.15);
-  --color-badge-down: #B91C1C;
-  --color-badge-down-bg: rgba(239, 68, 68, 0.12);
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  /* Red de seguridad: recorta cualquier desborde horizontal en el borde del
+     documento para que no aparezca scroll lateral si algún componente se
+     escapa. Se usa `clip` (no `hidden`) porque NO crea un contenedor de
+     scroll y por tanto no rompe `position: sticky`. */
+  overflow-x: clip;
+}
+
+/* El atributo `hidden` debe ganar a cualquier `display` de autor.
+   Sin esto, reglas como `.kpi-grid { display: grid }` anulan el
+   `display: none` de la hoja del agente y el elemento no se oculta. */
+[hidden] {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  /* Base de lectura y escalado (WCAG 1.4.4) */
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-base);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+/* Medios responsivos por defecto: ningún recurso embebido debe forzar el
+   ancho del documento. Los iconos SVG con tamaño propio (.btn-social svg,
+   etc.) ganan por especificidad de clase, así que no se deforman. */
+img,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+svg {
+  max-width: 100%;
 }
 
 /* ========================================
@@ -249,21 +319,23 @@ svg {
    ======================================== */
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--color-text);
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  line-height: 1.12;
+  letter-spacing: var(--tracking-tight);
   margin-bottom: var(--spacing-md);
+  /* Titulares equilibrados: evita líneas huérfanas en textos largos */
+  text-wrap: balance;
 }
 
 h1 {
-  font-size: var(--font-size-3xl);
-  font-weight: 800;
+  font-size: var(--font-size-display);
+  font-weight: 700;
 }
 
 h2 {
-  font-size: var(--font-size-2xl);
-  font-weight: 700;
+  font-size: clamp(1.35rem, 3vw, 1.875rem);
+  font-weight: 600;
 }
 
 h3 {
@@ -271,20 +343,28 @@ h3 {
   font-weight: 600;
 }
 
+h4 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
 p {
-  margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  /* Párrafos: evita cortes feos en la última línea */
+  text-wrap: pretty;
 }
 
 a {
-  color: var(--color-primary);
+  color: var(--accent-pink);
   text-decoration: underline;
   transition: color var(--transition-fast);
 }
 
 a:hover,
 a:focus {
-  color: var(--color-primary-light);
-  outline: 2px solid var(--color-focus);
+  color: var(--accent-pink-light);
+  outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
 
@@ -301,7 +381,7 @@ button,
   text-align: center;
   text-decoration: none;
   border: none;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition-base);
   font-family: inherit;
@@ -310,7 +390,7 @@ button,
 
 button:focus,
 .btn:focus {
-  outline: 3px solid var(--color-focus);
+  outline: 3px solid var(--border-focus);
   outline-offset: 2px;
 }
 
@@ -320,35 +400,56 @@ button:disabled,
   cursor: not-allowed;
 }
 
+/* Botón Primary Unificado (acción principal de cada slide) */
 .btn-primary {
-  background-color: var(--color-primary);
-  color: white;
+  background: linear-gradient(135deg, var(--accent-pink) 0%, var(--accent-purple) 100%);
+  color: #FFFFFF;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+  padding: 0.875rem 2rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
-.btn-primary:hover:not(:disabled),
-.btn-primary:focus:not(:disabled) {
-  background-color: var(--color-primary-light);
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  /* Sombra neutra: el acento de color lo pone el degradado, no un halo */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  filter: brightness(0.94);
+}
+
+.btn-primary:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 3px;
 }
 
 .btn-secondary {
-  background-color: var(--color-secondary);
+  background-color: var(--accent-purple);
   color: white;
 }
 
 .btn-secondary:hover:not(:disabled),
 .btn-secondary:focus:not(:disabled) {
-  background-color: var(--color-secondary-dark);
+  background-color: var(--accent-purple-dark);
 }
 
 .btn-outline {
   background-color: transparent;
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
+  color: var(--accent-pink);
+  border: 2px solid var(--accent-pink);
 }
 
 .btn-outline:hover:not(:disabled),
 .btn-outline:focus:not(:disabled) {
-  background-color: var(--color-primary);
+  background-color: var(--accent-pink);
   color: white;
 }
 
@@ -362,10 +463,10 @@ textarea {
   font-family: inherit;
   font-size: var(--font-size-base);
   padding: var(--spacing-sm) var(--spacing-md);
-  border: 2px solid var(--color-border);
-  border-radius: var(--border-radius-sm);
-  background-color: var(--color-bg-section);
-  color: var(--color-text);
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
   transition: border-color var(--transition-fast);
   width: 100%;
 }
@@ -373,22 +474,27 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  outline: none;
-  border-color: var(--color-focus);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  border-color: var(--border-focus);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
 }
 
 input:invalid,
 select:invalid,
 textarea:invalid {
-  border-color: var(--color-error);
+  border-color: var(--status-error);
 }
 
 label {
   display: block;
   font-weight: 600;
   margin-bottom: var(--spacing-xs);
-  color: var(--color-text);
+  color: var(--text-primary);
 }
 
 .form-group {
@@ -396,7 +502,7 @@ label {
 }
 
 .form-error {
-  color: var(--color-error);
+  color: var(--status-error);
   font-size: var(--font-size-sm);
   margin-top: var(--spacing-xs);
 }
@@ -416,18 +522,18 @@ label {
   top: 0;
   left: 0;
   transform: translateY(-150%);
-  background: var(--color-primary);
+  background: var(--accent-pink);
   color: white;
   padding: var(--spacing-sm) var(--spacing-md);
   text-decoration: none;
-  border-radius: 0 0 var(--border-radius-sm) 0;
+  border-radius: 0 0 var(--radius-sm) 0;
   z-index: 10000;
   transition: transform 0.15s ease;
 }
 
 .skip-link:focus-visible {
   transform: translateY(0);
-  outline: 3px solid var(--color-focus);
+  outline: 3px solid var(--border-focus);
   outline-offset: 2px;
 }
 
@@ -451,12 +557,6 @@ label {
   border-width: 0;
 }
 
-/* Foco visible (nunca remover outline) */
-:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
 /* ========================================
    Layout Helpers
    ======================================== */
@@ -467,13 +567,8 @@ label {
   padding: 0 var(--spacing-md);
 }
 
-.text-center {
-  text-align: center;
-}
-
-.text-right {
-  text-align: right;
-}
+.text-center { text-align: center; }
+.text-right { text-align: right; }
 
 .mb-sm { margin-bottom: var(--spacing-sm); }
 .mb-md { margin-bottom: var(--spacing-md); }
@@ -499,24 +594,28 @@ th,
 td {
   padding: var(--spacing-sm) var(--spacing-md);
   text-align: left;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 th {
-  background-color: var(--color-bg-alt);
+  background-color: var(--bg-card-hover);
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--text-primary);
 }
 
 tbody tr:hover {
-  background-color: var(--color-bg-section);
+  background-color: var(--row-hover);
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--row-even);
 }
 
 caption {
   font-weight: 600;
   text-align: left;
   margin-bottom: var(--spacing-sm);
-  color: var(--color-text);
+  color: var(--text-primary);
 }
 
 /* ========================================
@@ -527,8 +626,8 @@ caption {
   display: inline-block;
   width: 20px;
   height: 20px;
-  border: 3px solid var(--color-border);
-  border-top-color: var(--color-primary);
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--accent-pink);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -541,7 +640,7 @@ caption {
 @media (prefers-reduced-motion: reduce) {
   .loading {
     animation: none;
-    border-top-color: var(--color-primary);
+    border-top-color: var(--accent-pink);
   }
 }
 
@@ -551,7 +650,7 @@ caption {
 
 .alert {
   padding: var(--spacing-md);
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--radius-sm);
   margin-bottom: var(--spacing-lg);
   border-left: 4px solid;
 }
@@ -563,21 +662,908 @@ caption {
 }
 
 .alert-warning {
-  background-color: var(--color-bg-warning);
-  border-color: #F59E0B;
+  background-color: var(--bg-warning);
+  border-color: var(--accent-amber);
   color: #FCD34D;
 }
 
 .alert-error {
   background-color: rgba(239, 68, 68, 0.15);
-  border-color: var(--color-error);
+  border-color: var(--status-error);
   color: #FCA5A5;
 }
 
 .alert-success {
   background-color: rgba(16, 185, 129, 0.15);
-  border-color: var(--color-success);
+  border-color: var(--status-success);
   color: #6EE7B7;
+}
+
+/* ========================================
+   App shell, Web Story y componentes
+   ======================================== */
+
+.app-wrapper {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+/* Los hijos de un contenedor flex tienen `min-width: auto`, que se resuelve
+   al tamaño mínimo de contenido del elemento. Sin esta red de seguridad,
+   cualquier descendiente con un ancho mínimo grande estiraba `main` por
+   encima del viewport. `min-width: 0` desactiva ese mínimo automático. */
+.app-wrapper > * {
+  min-width: 0;
+}
+
+/* ---------- Top bar ---------- */
+.top-bar {
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  box-shadow: var(--shadow-md);
+}
+
+.top-bar-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-ine-img {
+  height: 36px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.top-bar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle {
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+.btn-link:hover {
+  color: var(--text-primary);
+  background-color: var(--btn-soft);
+}
+
+/* ---------- Progreso de la historia ---------- */
+.story-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.story-progress-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.story-dots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.story-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--border-subtle);
+  transition: background var(--transition-base), transform var(--transition-base);
+}
+
+.story-dot.done {
+  background: var(--text-muted);
+}
+
+.story-dot.active {
+  background: var(--accent-pink);
+  transform: scale(1.35);
+}
+
+/* ---------- Contenido ----------
+   El slide se centra verticalmente en el espacio que sobra (la Web Story
+   ocupa la pantalla completa). Si el slide es más alto que la pantalla, el
+   contenedor crece y el contenido nunca queda recortado. */
+.main-content {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ---------- Contexto (datos del usuario) ---------- */
+.context-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 900px;
+  margin: 0 auto 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.context-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.context-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: var(--tracking-tight);
+  text-transform: uppercase;
+}
+
+.context-value {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.context-divider {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  padding: 0 0.1rem;
+}
+
+.btn-change {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--accent-pink);
+  border: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  min-height: 44px;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+  font-family: var(--font-heading);
+  letter-spacing: var(--tracking-tight);
+}
+
+.btn-change:hover {
+  filter: brightness(0.94);
+  transform: translateY(-1px);
+}
+
+.btn-change:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.btn-change:active {
+  transform: translateY(0);
+  filter: brightness(0.9);
+}
+
+/* ---------- Slides ---------- */
+/* `responsive.css` aplica `padding` a `section:not(.section-card)` desde
+   768px. Los slides gestionan su propio espaciado, así que se neutraliza
+   con un selector más específico que el de la hoja global. */
+.main-content section.slide {
+  padding: 0;
+}
+
+.slide {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.slide-title {
+  font-size: clamp(1.6rem, 4.5vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+  max-width: 22ch;
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* Marca editorial: una regla corta de acento abre cada slide. Es el mismo
+   gesto en los cinco, así que funciona como firma, no como decoración. */
+.slide-title::before {
+  content: '';
+  display: block;
+  width: 2.25rem;
+  height: 3px;
+  margin: 0 auto 1.1rem;
+  background: var(--accent-pink);
+  border-radius: 2px;
+}
+
+.slide-title-xl {
+  font-size: var(--font-size-hero);
+  max-width: 18ch;
+}
+
+/* El encabezado recibe el foco por programa: no debe mostrar anillo
+   (WCAG 2.4.7 aplica al foco por teclado; aquí el foco es gestionado). */
+.slide-title:focus,
+.slide-title:focus-visible {
+  outline: none;
+}
+
+.slide-lead {
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
+  color: var(--text-secondary);
+  max-width: 60ch;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.slide-note {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 60ch;
+  margin: 0;
+}
+
+.slide-warning {
+  max-width: 60ch;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-warning);
+  border-left: 4px solid var(--accent-amber);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.slide-card {
+  width: 100%;
+  background: var(--gradient-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.slide-card-cta {
+  max-width: 720px;
+}
+
+.slide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+  margin-top: 1rem;
+}
+
+/* En el onboarding las acciones se alinean con la columna de texto */
+.slide-actions-left {
+  justify-content: flex-start;
+  margin-top: 0;
+}
+
+.btn-back {
+  background: none;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 0.7rem 1.25rem;
+  min-height: 44px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-back:hover {
+  color: var(--text-primary);
+  border-color: var(--accent-pink);
+}
+
+.btn-back:active {
+  background: var(--bg-card-hover);
+}
+
+.legal-note {
+  font-size: 0.875rem;   /* mínimo 14px (WCAG 1.4.4) */
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Chips de indicadores secundarios */
+.stat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+/* Los chips son datos, no tarjetas: radio corto, sin sombra, con un filete
+   superior que separa la etiqueta del valor. */
+.stat-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 150px;
+  padding: 0.7rem 1rem 0.8rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  border-top: 2px solid var(--line);
+}
+
+.stat-chip-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.stat-chip-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+}
+
+/* La caída se marca con signo y flecha, no solo con color (WCAG 1.4.1) */
+.stat-chip-value.down {
+  color: var(--status-error);
+}
+
+/* Detalle secundario desplegable */
+.slide-details {
+  width: 100%;
+  max-width: 900px;
+  text-align: left;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.slide-details summary {
+  cursor: pointer;
+  padding: 0.9rem 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.slide-details summary:hover {
+  color: var(--accent-pink);
+}
+
+.slide-details summary:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.slide-details-body {
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ---------- Onboarding: composición asimétrica ----------
+   El slide 1 no es un beat narrativo: es un formulario. Por eso no va
+   centrado como los demás, sino en dos columnas: a la izquierda la
+   promesa y el formulario, a la derecha el recorrido de la historia
+   (que es una secuencia real, por eso sí va numerada). */
+.slide-onboarding {
+  max-width: 1080px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 3.5rem;
+  align-items: start;
+  text-align: left;
+}
+
+.onboarding-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.onboarding-main .slide-title {
+  max-width: 16ch;
+}
+
+/* La marca editorial se alinea con el texto en esta columna */
+.onboarding-main .slide-title::before {
+  margin-left: 0;
+}
+
+.mad-libs-container {
+  width: 100%;
+}
+
+/* Rail: el recorrido de la historia */
+.story-rail {
+  border-left: 1px solid var(--line);
+  padding-left: 1.75rem;
+}
+
+.story-rail-heading {
+  font-family: var(--font-base);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-wide);
+  margin-bottom: 0.75rem;
+}
+
+.story-rail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.story-rail-item {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  gap: 0.75rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.story-rail-item:last-child {
+  border-bottom: none;
+}
+
+.story-rail-num {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--accent-pink);
+  line-height: 1.5;
+}
+
+.story-rail-name {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.story-rail-desc {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .slide-onboarding {
+    grid-template-columns: 1fr;
+    gap: 2.25rem;
+  }
+
+  .story-rail {
+    border-left: none;
+    border-top: 1px solid var(--line);
+    padding-left: 0;
+    padding-top: 1.5rem;
+  }
+}
+
+.gradient-text {
+  background: var(--gradient-hero);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---------- Compartir ---------- */
+.share-box {
+  width: 100%;
+  max-width: 720px;
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  text-align: left;
+}
+
+.share-box h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.35rem;
+}
+
+.share-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.9rem;
+}
+
+.social-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.btn-social {
+  width: auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  gap: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.btn-social:hover {
+  transform: scale(1.05);
+  background: var(--accent-pink);
+  color: #fff;
+}
+
+.btn-social svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.social-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.share-feedback {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid var(--status-success);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.btn-copy-text {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 0.5rem;
+  min-height: 44px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.btn-copy-text:hover {
+  color: var(--text-primary);
+  border-color: var(--accent-pink);
+}
+
+.btn-copy-text:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Acción secundaria destacada en Slide 5: material educativo */
+.ficha-action {
+  margin-top: var(--spacing-lg);
+  text-align: center;
+}
+
+.btn-ficha {
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  transition: all var(--transition-base);
+  min-height: 44px;
+}
+
+.btn-ficha:hover:not(:disabled) {
+  border-color: var(--accent-pink);
+  color: var(--accent-pink);
+  background: rgba(216, 0, 95, 0.05);
+}
+
+.btn-ficha:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Modal de compartir ---------- */
+.share-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  /* Por encima de la barra superior fija (1100) y del WelcomeTour (2000) */
+  z-index: 2500;
+}
+
+.share-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  max-width: 460px;
+  width: 100%;
+  max-height: calc(100vh - 3rem);
+  max-height: calc(100dvh - 3rem);
+  overflow-y: auto;
+  box-shadow: var(--shadow-md);
+}
+
+.share-modal:focus { outline: none; }
+
+.share-modal h4 {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.share-modal-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.share-preview {
+  margin: 0 0 1.25rem;
+  padding: 1rem;
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--accent-pink);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.share-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.btn-cancel {
+  background: none;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 0.65rem 1.25rem;
+  min-height: 44px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-confirm {
+  background: var(--gradient-accent);
+  border: none;
+  color: #fff;
+  padding: 0.65rem 1.5rem;
+  min-height: 44px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel:focus-visible,
+.btn-confirm:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Estados de error y carga ---------- */
+.error-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.error-state h2 {
+  color: var(--status-error);
+  margin-bottom: 1rem;
+}
+
+.error-state p {
+  color: var(--text-secondary);
+  max-width: 480px;
+  margin: 0 auto 1.5rem;
+}
+
+.btn-retry {
+  background: var(--gradient-accent);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent-pink);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- Footer ---------- */
+.app-footer {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-subtle);
+  padding: 1.5rem 2rem;
+  flex-shrink: 0;
+}
+
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.footer-left,
+.footer-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+}
+
+.footer-left a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.footer-left a:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.footer-btn-tour {
+  background: none;
+  border: none;
+  padding: 0.5rem 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+.footer-btn-tour:hover {
+  color: var(--text-primary);
+}
+
+.footer-btn-tour:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .top-bar-content,
+  .main-content { padding-left: 1rem; padding-right: 1rem; }
+  .top-bar-content { justify-content: center; }
+  .story-progress { order: 3; width: 100%; justify-content: center; }
+  .slide-card { border-radius: var(--radius-md); }
+  .btn-primary { width: 100%; }
+  .app-footer { padding: 1.5rem 1rem; }
+  .footer-content { flex-direction: column; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary:hover,
+  .btn-social:hover {
+    transform: none;
+  }
+  .story-dot { transition: none; }
 }
 
 /* ========================================
@@ -589,17 +1575,50 @@ caption {
     background: white;
     color: black;
   }
-  
-  .no-print,
-  button,
-  .btn {
+
+  /* Al imprimir la ficha educativa, solo se imprime ella */
+  .app-wrapper {
     display: none !important;
   }
-  
+
+  .ficha-backdrop {
+    position: static !important;
+    inset: auto;
+    background: transparent !important;
+    display: block !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    padding: 0 !important;
+    height: auto !important;
+    width: 100%;
+  }
+
+  .ficha-dialog {
+    max-height: none !important;
+    overflow-y: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    color: #111 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .ficha-close, .ficha-acciones, .no-print, button, .btn {
+    display: none !important;
+  }
+
+  .ficha-desc { color: #111 !important; }
+
+  .ficha-tabla caption,
+  .ficha-tabla th { background: #eee !important; color: #111 !important; }
+  .ficha-tabla td { border-bottom-color: #ccc !important; }
+
   a {
     text-decoration: underline;
   }
-  
+
   a[href]:after {
     content: " (" attr(href) ")";
   }
