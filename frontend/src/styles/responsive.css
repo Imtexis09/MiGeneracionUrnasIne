@@ -1,0 +1,63 @@
+/**
+ * Ajustes responsive y de preferencias del usuario.
+ * La maquetación de cada vista vive en global.css y en cada componente;
+ * aquí solo van las reglas que dependen del dispositivo o de la preferencia.
+ */
+
+@media (min-width: 768px) {
+  th,
+  td {
+    padding-inline: 1rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .main-content {
+    padding-top: 1.25rem;
+  }
+}
+
+/* Alto contraste */
+@media (prefers-contrast: more) {
+  :root,
+  :root[data-theme='light'] {
+    --bg-main: #ffffff;
+    --bg-card: #ffffff;
+    --text-secondary: #1a1a1a;
+    --text-muted: #333333;
+    --line: #000000;
+    --border-subtle: #000000;
+    --sheet-plate: transparent;
+  }
+
+  :root[data-theme='dark'] {
+    --bg-main: #000000;
+    --bg-card: #000000;
+    --text-secondary: #ffffff;
+    --text-muted: #e5e5e5;
+    --line: #ffffff;
+    --border-subtle: #ffffff;
+    --sheet-plate: transparent;
+  }
+
+  a {
+    text-decoration-thickness: 2px;
+  }
+}
+
+/* Táctil: área mínima de 44 px en controles de acción */
+@media (hover: none) and (pointer: coarse) {
+  button:not(.tooltip-trigger):not(.readout-close):not(.seat) {
+    min-height: 44px;
+  }
+}
+
+/* Ahorro de datos: sin fondos decorativos ni animaciones */
+@media (prefers-reduced-data: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

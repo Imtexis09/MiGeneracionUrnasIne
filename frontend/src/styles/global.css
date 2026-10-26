@@ -1,0 +1,1673 @@
+/**
+ * Mi Generación en las Urnas — sistema de diseño
+ *
+ * Idea rectora: la BOLETA ELECTORAL.
+ * Todo el sitio está impreso como una boleta: papel, tinta ciruela, una sola
+ * tinta de acento (el magenta del INE) y casillas que se marcan con tache.
+ * Ese mismo gesto (la casilla marcada / la casilla vacía) es el dato de la
+ * historia (votó / no votó), el progreso, los pasos del formulario y la
+ * leyenda, así que la interfaz y el contenido hablan el mismo idioma.
+ *
+ * Tipografía
+ *  - Big Shoulders Display: señalética cívica condensada. Solo titulares y
+ *    cifras grandes. Se usa en minúsculas/sentence case, nunca en versales.
+ *  - Public Sans: texto e interfaz. Sans institucional de alta legibilidad,
+ *    nacida de Libre Franklin (tipografía de prensa y señalética oficial);
+ *    sus cifras son limpias, sin ceros tachados, buenas para un sitio de datos.
+ *
+ * WCAG 2.1 AA. Mobile-first. Cero peticiones a terceros (fuentes autoalojadas
+ * en public/fonts/).
+ */
+
+@import url('./accessibility.css');
+
+/* ========================================
+   Fuentes (autoalojadas)
+   ======================================== */
+
+@font-face {
+  font-family: 'Big Shoulders Display';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/big-shoulders-display.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/public-sans.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Public Sans';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/public-sans-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+/* Solo para la tarjeta compartible: textos casi manuscritos */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/caveat.woff2') format('woff2');
+}
+
+/* ========================================
+   Tokens
+   ======================================== */
+
+:root {
+  /* ---- Tipografía ---- */
+  --font-display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+  --font-base: 'Public Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-heading: var(--font-display);
+
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1.0625rem;
+  --font-size-lg: 1.1875rem;
+  --font-size-xl: 1.375rem;
+
+  /* Escala de titulares (condensada: pide tamaños grandes) */
+  --size-title: clamp(2.5rem, 5.6vw, 6.5rem);
+  --size-title-xl: clamp(2.75rem, 6.6vw, 7rem);
+  --size-numeral: clamp(9rem, 24vw, 26rem);
+
+  --tracking-display: -0.005em;
+  --tracking-tight: -0.01em;
+  --tracking-wide: 0.02em;
+
+  --measure: 62ch;
+
+  /* Márgenes fluidos: el contenido ocupa todo el ancho de la ventana */
+  --gutter: clamp(1rem, 4.5vw, 5rem);
+
+  /* ---- Radios: la boleta es casi recta ---- */
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+
+  /* ---- Espaciado ---- */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  --transition-fast: 140ms ease;
+  --transition-base: 240ms ease;
+
+  /* Tache: la marca de la casilla. Se usa como máscara para que tome el
+     color del texto actual (currentColor) en cualquier contexto. */
+  --tache: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3.9 5.3C8.2 7.6 10.6 11.8 13.1 14.1S17.6 18.3 20.1 19.7' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M19.6 3.8C16.4 7.9 12.2 10.2 9.7 13.4S5.9 18.6 4.3 20.4' fill='none' stroke='%23000' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  /* Los dos trazos por separado, para dibujarlos uno tras otro como a mano */
+  --tache-1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3.9 5.3C8.2 7.6 10.6 11.8 13.1 14.1S17.6 18.3 20.1 19.7' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --tache-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19.6 3.8C16.4 7.9 12.2 10.2 9.7 13.4S5.9 18.6 4.3 20.4' fill='none' stroke='%23000' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+  /* Flecha del <select> (máscara, también toma el color del texto) */
+  --caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 9l7 7 7-7' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* ---- Tema claro: papel de boleta (por defecto) ---- */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg-main: #f3eef5;            /* papel */
+  --bg-card: #ffffff;            /* hoja de boleta */
+  --bg-card-hover: #ebe3ef;
+  --bg-warning: #f7e4ef;
+
+  --ink: #24102c;                /* tinta ciruela */
+  --text-primary: #24102c;
+  --text-secondary: #46344e;
+  --text-muted: #665470;
+
+  --accent-pink: #c70a6e;        /* magenta INE (texto y rellenos) */
+  --accent-pink-light: #e01c85;
+  --accent-pink-deep: #9a0652;
+  --accent-purple: #5a2a6b;
+  --accent-purple-dark: #3b1a4a;
+  --accent-cyan: #0b7a85;
+  --accent-amber: #9a6a00;
+  --on-accent: #ffffff;
+
+  --status-voted: var(--accent-pink);
+  --status-absent: #665470;
+  --status-error: #b42318;
+  --status-success: #0b7a52;
+
+  --line: rgba(36, 16, 44, 0.18);          /* filete suave */
+  --rule-strong: #b3a8b9;                  /* filete gris (antes tinta) */
+  --border-subtle: rgba(36, 16, 44, 0.18);
+  --border-focus: #1b4fd6;
+
+  --sheet-plate: rgba(199, 10, 110, 0.16); /* segunda tinta desfasada */
+
+  --chart-intermedia: #0b7a85;
+  --chart-presidencial: #c70a6e;
+  --chart-dot-stroke: #f3eef5;
+
+  --footer-bg: #24102c;
+  --footer-text: #e9ddee;
+  --footer-link: #ffffff;
+
+  --row-hover: rgba(36, 16, 44, 0.04);
+  --row-even: rgba(36, 16, 44, 0.02);
+  --btn-soft: rgba(36, 16, 44, 0.06);
+  --backdrop: rgba(36, 16, 44, 0.62);
+
+  --gradient-accent: var(--accent-pink);
+  --gradient-hero: var(--accent-pink);
+  --gradient-card: var(--bg-card);
+  --panel-bg: var(--bg-card);
+
+  --shadow-sm: none;
+  --shadow-md: 0 1px 0 rgba(36, 16, 44, 0.08);
+  --shadow-lg: 0 18px 40px -18px rgba(36, 16, 44, 0.45);
+}
+
+/* ---- Tema oscuro: noche de conteo ---- */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg-main: #170b1e;
+  --bg-card: #22122b;
+  --bg-card-hover: #2e1a3a;
+  --bg-warning: #3a1530;
+
+  --ink: #f7eff9;
+  --text-primary: #f7eff9;
+  --text-secondary: #d6c7dc;
+  --text-muted: #a995b3;
+
+  --accent-pink: #ff4d9e;
+  --accent-pink-light: #ff7ab8;
+  --accent-pink-deep: #ff2f8e;
+  --accent-purple: #c9a2dc;
+  --accent-purple-dark: #a97fc0;
+  --accent-cyan: #4cd0d8;
+  --accent-amber: #f0b44c;
+  --on-accent: #1a0a21;
+
+  --status-voted: var(--accent-pink);
+  --status-absent: #a995b3;
+  --status-error: #ff8f85;
+  --status-success: #55e0a3;
+
+  --line: rgba(247, 239, 249, 0.18);
+  --rule-strong: #6b5c76;                  /* filete gris (antes tinta clara) */
+  --border-subtle: rgba(247, 239, 249, 0.18);
+  --border-focus: #8cc8ff;
+
+  --sheet-plate: rgba(255, 77, 158, 0.2);
+
+  --chart-intermedia: #4cd0d8;
+  --chart-presidencial: #ff4d9e;
+  --chart-dot-stroke: #170b1e;
+
+  --footer-bg: #0f0615;
+  --footer-text: #bba8c4;
+  --footer-link: #f7eff9;
+
+  --row-hover: rgba(255, 255, 255, 0.04);
+  --row-even: rgba(255, 255, 255, 0.02);
+  --btn-soft: rgba(255, 255, 255, 0.07);
+  --backdrop: rgba(8, 3, 12, 0.72);
+
+  --shadow-md: none;
+  --shadow-lg: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+}
+
+/* ========================================
+   Dibujos: conservan su paleta original (papel, tinta ciruela, magenta) en
+   tema oscuro. Se reasignan los tokens claros dentro de cada ilustración, con
+   la segunda tinta un poco más viva para que se lea sobre el fondo oscuro.
+   ======================================== */
+
+:root[data-theme='dark'] :is(.urna, .personas, .ine-card) {
+  color-scheme: light;
+
+  --bg-main: #f3eef5;
+  --bg-card: #ffffff;
+  --bg-card-hover: #ebe3ef;
+
+  --ink: #24102c;
+  --text-primary: #24102c;
+  --text-secondary: #46344e;
+  --text-muted: #665470;
+
+  --accent-pink: #c70a6e;
+  --accent-pink-light: #e01c85;
+  --accent-pink-deep: #9a0652;
+  --accent-purple: #5a2a6b;
+  --accent-purple-dark: #3b1a4a;
+  --accent-cyan: #0b7a85;
+  --accent-amber: #9a6a00;
+  --on-accent: #ffffff;
+
+  --line: rgba(36, 16, 44, 0.18);
+  --rule-strong: #b3a8b9;
+  --border-subtle: rgba(36, 16, 44, 0.18);
+
+  --sheet-plate: rgba(224, 28, 133, 0.34);
+}
+
+/* ========================================
+   Reset y base
+   ======================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  /* `clip` (no `hidden`): no crea contenedor de scroll, no rompe `sticky` */
+  overflow-x: clip;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-base);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+  font-optical-sizing: auto;
+}
+
+img,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+svg {
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--accent-pink);
+  color: var(--on-accent);
+}
+
+/* ========================================
+   Tipografía
+   ======================================== */
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 0.95;
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-base);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+}
+
+h1 { font-size: var(--size-title); }
+h2 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
+h3 { font-size: var(--font-size-xl); }
+h4 { font-size: var(--font-size-lg); }
+
+p {
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+a {
+  color: var(--accent-pink);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--accent-pink-deep);
+}
+
+/* ========================================
+   Botones
+   ======================================== */
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Acción principal de cada slide: tinta magenta, plana y rectangular */
+.btn-primary,
+.btn-confirm,
+.btn-retry,
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 52px;
+  padding: 0.85rem 1.75rem;
+  background: var(--accent-pink);
+  color: var(--on-accent);
+  border: 1.5px solid var(--accent-pink);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-base);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: 0.005em;
+  text-decoration: none;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-primary:hover:not(:disabled),
+.btn-confirm:hover:not(:disabled),
+.btn-retry:hover:not(:disabled),
+.btn-download:hover:not(:disabled) {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg-main);
+}
+
+.btn-primary:active:not(:disabled),
+.btn-confirm:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Acción secundaria: contorno de tinta */
+.btn-back,
+.btn-cancel,
+.btn-change {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.6rem 1.15rem;
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-back:hover,
+.btn-cancel:hover,
+.btn-change:hover {
+  background: var(--ink);
+  color: var(--bg-main);
+}
+
+/* ========================================
+   Formularios
+   ======================================== */
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.form-error {
+  color: var(--status-error);
+  font-size: var(--font-size-sm);
+}
+
+/* ========================================
+   Utilidades
+   ======================================== */
+
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: translateY(-150%);
+  background: var(--ink);
+  color: var(--bg-main);
+  padding: 0.7rem 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 0 0 var(--radius-sm) 0;
+  z-index: 10000;
+  transition: transform 0.15s ease;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+#main-content:focus {
+  outline: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* La casilla: el átomo visual de todo el sitio.
+   `.casilla` es la caja; `.casilla.marcada` lleva el tache encima. */
+.casilla {
+  --casilla-size: 1.25rem;
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--casilla-size);
+  height: var(--casilla-size);
+  border: 1.5px solid var(--rule-strong);
+  border-radius: 2px;
+  background: var(--bg-card);
+  color: var(--accent-pink);
+}
+
+.casilla.marcada::after {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  background: currentColor;
+  -webkit-mask: var(--tache) center / contain no-repeat;
+  mask: var(--tache) center / contain no-repeat;
+}
+
+/* Tablas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+caption {
+  font-weight: 700;
+  text-align: left;
+  color: var(--text-primary);
+}
+
+/* ========================================
+   Alertas
+   ======================================== */
+
+.alert {
+  padding: var(--spacing-md);
+  border-left: 4px solid;
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ========================================
+   App shell
+   ======================================== */
+
+.app-wrapper {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+.app-wrapper > * {
+  min-width: 0;
+}
+
+/* ---------- Barra superior ---------- */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  background: var(--bg-main);
+  border-bottom: 1.5px solid var(--rule-strong);
+}
+
+/* La franja superior es la barra de progreso: la tinta magenta avanza
+   a medida que se recorren los cinco pasos. */
+.top-progress {
+  height: 6px;
+  background: color-mix(in srgb, var(--accent-pink) 20%, transparent);
+}
+
+.top-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent-pink);
+  transition: width 600ms cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+.top-bar-content {
+  width: 100%;
+  padding: 0.7rem var(--gutter);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  line-height: 1;
+  margin: 0;
+}
+
+.logo-ine-img {
+  height: 34px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+/* Modo oscuro: mismo logotipo que en claro, con filtro blanco */
+.logo-ine-img.logo-blanco {
+  filter: brightness(0) invert(1);
+}
+
+.top-bar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.15rem 0.25rem;
+}
+
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.35rem 0.7rem;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1.5px;
+  transition: color var(--transition-fast), text-decoration-color var(--transition-fast);
+}
+
+.btn-link:hover {
+  color: var(--text-primary);
+  text-decoration-color: var(--accent-pink);
+}
+
+.theme-toggle {
+  width: 40px;
+  padding: 0;
+  margin-left: 0.5rem;
+  color: var(--text-primary);
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+
+.theme-toggle:hover {
+  background: var(--ink);
+  color: var(--bg-main);
+}
+
+/* ---------- Contenido ---------- */
+.main-content {
+  width: 100%;
+  padding: 2.5rem var(--gutter) 4rem;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Contexto: de quién son los datos ---------- */
+.context-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  padding-bottom: 0.9rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.context-info {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+}
+
+.context-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.context-value {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.context-divider {
+  align-self: center;
+  width: 1px;
+  height: 1em;
+  background: var(--line);
+}
+
+.btn-change {
+  min-height: 40px;
+  padding: 0.4rem 0.95rem;
+  font-size: var(--font-size-sm);
+}
+
+/* ---------- Slides ---------- */
+.main-content section.slide {
+  padding: 0;
+}
+
+.slide {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  text-align: left;
+}
+
+.slide-title {
+  font-family: var(--font-display);
+  font-size: var(--size-title);
+  font-weight: 800;
+  line-height: 0.94;
+  letter-spacing: var(--tracking-display);
+  max-width: 22ch;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.slide-title-xl {
+  font-size: var(--size-title-xl);
+}
+
+.slide-title:focus,
+.slide-title:focus-visible {
+  outline: none;
+}
+
+.slide-lead {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  max-width: var(--measure);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.slide-note {
+  font-weight: 700;
+  color: var(--text-primary);
+  max-width: var(--measure);
+  margin: 0;
+}
+
+.slide-insight {
+  max-width: var(--measure);
+  padding-left: 1rem;
+  border-left: 3px solid var(--accent-pink);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.slide-warning {
+  max-width: var(--measure);
+  margin: 0;
+  padding: 0.85rem 1rem;
+  background: var(--bg-warning);
+  border-left: 3px solid var(--accent-pink);
+  color: var(--text-primary);
+  font-size: 0.975rem;
+}
+
+.slide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.slide-actions-left {
+  margin-top: 0;
+}
+
+.legal-note {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Hoja de boleta: papel blanco, borde de tinta y una segunda tinta
+   desfasada (la placa magenta). Se reserva para los tres objetos
+   principales: el formulario, la boleta de 100 casillas y la tarjeta. */
+.hoja {
+  background: var(--bg-card);
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 7px 7px 0 var(--sheet-plate);
+}
+
+.slide-card {
+  width: 100%;
+}
+
+/* ---------- Franja de cifras (sin cajas: filetes) ---------- */
+.stat-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  width: 100%;
+  border-top: 1.5px solid var(--rule-strong);
+}
+
+.stat-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 1rem 1.25rem 1.1rem 0;
+}
+
+.stat-chip + .stat-chip {
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--line);
+}
+
+.stat-chip-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  order: 2;
+}
+
+.stat-chip-value {
+  order: 1;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 4.4vw, 3rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: var(--tracking-display);
+  color: var(--text-primary);
+}
+
+/* La caída se marca con signo y flecha, no solo con color (WCAG 1.4.1) */
+.stat-chip-value.down {
+  color: var(--status-error);
+}
+
+/* ---------- Detalle desplegable ---------- */
+.slide-details {
+  width: 100%;
+  border-top: 1.5px solid var(--rule-strong);
+  border-bottom: 1.5px solid var(--rule-strong);
+}
+
+.slide-details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 56px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.slide-details summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Más / menos dibujado con dos filetes */
+.slide-details summary::after {
+  content: '';
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  background:
+    linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 2px 100% no-repeat;
+  transition: transform var(--transition-base);
+}
+
+.slide-details[open] summary::after {
+  background: linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat;
+}
+
+.slide-details summary:hover {
+  color: var(--accent-pink);
+}
+
+.slide-details-body {
+  padding-bottom: 1.5rem;
+}
+
+/* ---------- Slide 1: onboarding ---------- */
+.slide-onboarding {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  grid-template-areas:
+    'copy map'
+    'rail rail';
+  column-gap: clamp(2rem, 4vw, 6rem);
+  row-gap: 3.5rem;
+  align-items: start;
+}
+
+.onboarding-main {
+  grid-area: copy;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.onboarding-main .slide-title {
+  max-width: 14ch;
+  font-size: clamp(3rem, 5.2vw, 7rem);
+}
+
+.mad-libs-container {
+  width: 100%;
+  max-width: 46rem;
+}
+
+.onboarding-map {
+  grid-area: map;
+  min-width: 0;
+  align-self: center;
+}
+
+/* Recorrido: cuatro momentos, secuencia real, por eso va numerada */
+.story-rail {
+  grid-area: rail;
+  border-top: 1.5px solid var(--rule-strong);
+  padding-top: 1.5rem;
+}
+
+.story-rail-heading {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+}
+
+.story-rail-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+}
+
+.story-rail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0 1.5rem 0 0;
+}
+
+.story-rail-item + .story-rail-item {
+  padding-left: 1.5rem;
+  border-left: 1px solid var(--line);
+}
+
+.story-rail-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.75rem;
+  line-height: 0.9;
+  color: var(--accent-pink);
+}
+
+.story-rail-name {
+  display: block;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.story-rail-desc {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+@media (max-width: 1000px) {
+  .slide-onboarding {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'copy'
+      'map'
+      'rail';
+    row-gap: 2.5rem;
+  }
+
+  .story-rail-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 1.5rem;
+  }
+
+  .story-rail-item:nth-child(odd) {
+    padding-left: 0;
+    border-left: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .story-rail-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .story-rail-item,
+  .story-rail-item + .story-rail-item {
+    padding: 1rem 0 0;
+    border-left: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .story-rail-item:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+}
+
+/* ---------- Slide 2: el choque ---------- */
+.slide-shock {
+  gap: 2.5rem;
+}
+
+.shock-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: clamp(1.5rem, 5vw, 4.5rem);
+  align-items: end;
+  width: 100%;
+}
+
+.shock-numeral {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.shock-number {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: var(--size-numeral);
+  line-height: 0.78;
+  letter-spacing: -0.02em;
+  color: var(--accent-pink);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.shock-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding-bottom: 0.25rem;
+  min-width: 0;
+}
+
+.shock-copy .slide-title {
+  font-size: clamp(2.1rem, 4.2vw, 5rem);
+  max-width: 24ch;
+}
+
+@media (max-width: 760px) {
+  .shock-hero {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 1.75rem;
+  }
+}
+
+/* La urna: asomada desde el pie de página, en la esquina inferior derecha,
+   cortada por la mitad. Sale del flujo (no mueve nada) y se ancla al borde
+   inferior de <main>, que es justo donde empieza el pie. */
+.main-content:has(.slide-shock) {
+  position: relative;
+  /* La mitad oculta de la urna no debe alargar la página: sin esto el dibujo
+     desborda por abajo y deja un espacio vacío debajo del pie de página. */
+  overflow-y: clip;
+}
+
+.shock-art {
+  --art-w: clamp(220px, 24vw, 22rem);
+  position: absolute;
+  right: var(--gutter);
+  bottom: 0;
+  z-index: 2;
+  width: var(--art-w);
+  /* mitad superior de la urna (de la tapa a la mitad del cuerpo) */
+  height: calc(var(--art-w) * 0.431);
+  pointer-events: none;
+  /* Corta SOLO por abajo; arriba y a los lados la hoja puede desbordar
+     y sobreponerse a lo de arriba cuando cae. */
+  clip-path: inset(-60rem -3rem 0 -3rem);
+}
+
+.shock-art-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  /* alto completo del dibujo (viewBox 210 × 170) */
+  height: calc(var(--art-w) * 0.81);
+}
+
+/* En pantallas angostas los botones ocupan todo el ancho: se reserva el hueco
+   de la urna debajo para que nunca los tape. */
+@media (max-width: 999px) {
+  .main-content:has(.slide-shock) {
+    padding-bottom: calc(clamp(220px, 24vw, 22rem) * 0.431 + 1.5rem);
+  }
+}
+
+/* ---------- Slide 5: compartir ---------- */
+.slide-cta {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+  grid-template-areas:
+    'card copy'
+    'card share'
+    'cierre cierre';
+  grid-template-rows: auto 1fr auto;
+  column-gap: clamp(2rem, 6vw, 5rem);
+  row-gap: 1.5rem;
+  align-items: start;
+}
+
+.cta-card {
+  grid-area: card;
+  min-width: 0;
+}
+
+.cta-copy {
+  grid-area: copy;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.cta-share {
+  grid-area: share;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .slide-cta {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'copy'
+      'card'
+      'share'
+      'cierre';
+    grid-template-rows: none;
+  }
+}
+
+.share-box {
+  width: 100%;
+  max-width: 42rem;
+  padding-top: 1.1rem;
+  border-top: 1.5px solid var(--rule-strong);
+}
+
+.share-box h3 {
+  font-size: var(--font-size-lg);
+  margin-bottom: 0.2rem;
+}
+
+.share-text {
+  font-size: 0.975rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.social-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.btn-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.7rem;
+  min-height: 52px;
+  padding: 0 1rem;
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 700;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-social:hover {
+  background: var(--ink);
+  color: var(--bg-main);
+}
+
+.btn-social svg {
+  display: block;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.social-label {
+  font-size: 0.975rem;
+}
+
+.share-feedback {
+  margin-bottom: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg-warning);
+  border-left: 3px solid var(--status-success);
+  font-size: 0.925rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.btn-copy-text {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.5rem 1rem;
+  border: 1.5px dashed var(--rule-strong);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  transition: background-color var(--transition-fast), border-style var(--transition-fast);
+}
+
+.btn-copy-text:hover {
+  background: var(--btn-soft);
+  border-style: solid;
+}
+
+/* Material educativo: enlace, no botón (acción terciaria) */
+.btn-ficha {
+  min-height: 44px;
+  padding: 0.4rem 0;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-pink);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}
+
+.btn-ficha:hover {
+  color: var(--accent-pink);
+}
+
+/* ---------- Modal de compartir ---------- */
+.share-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 2500;
+}
+
+.share-modal {
+  background: var(--bg-card);
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 7px 7px 0 var(--sheet-plate);
+  padding: 1.75rem;
+  max-width: 30rem;
+  width: 100%;
+  max-height: calc(100dvh - 3rem);
+  overflow-y: auto;
+}
+
+.share-modal:focus {
+  outline: none;
+}
+
+.share-modal h4 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 0.6rem;
+}
+
+.share-modal-desc {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.share-preview {
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.1rem;
+  background: var(--bg-main);
+  border-left: 3px solid var(--accent-pink);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.share-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* ---------- Estados de error y carga ---------- */
+.error-state {
+  padding: 4rem 0;
+  max-width: 34rem;
+}
+
+.error-state h2 {
+  color: var(--status-error);
+  font-size: var(--size-title);
+  margin-bottom: 1rem;
+}
+
+.error-state p {
+  margin-bottom: 1.5rem;
+}
+
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1.25rem;
+  flex: 1;
+}
+
+/* Cargando: cuatro casillas que se marcan en secuencia */
+.loading-spinner {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.loading-spinner .casilla {
+  --casilla-size: 1.5rem;
+}
+
+.loading-spinner .casilla::before,
+.loading-spinner .casilla::after {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  background: currentColor;
+  clip-path: inset(0 100% 0 0);
+}
+
+.loading-spinner .casilla::before {
+  -webkit-mask: var(--tache-1) center / contain no-repeat;
+  mask: var(--tache-1) center / contain no-repeat;
+  animation: marcar-1 1.6s ease-in-out infinite;
+}
+
+.loading-spinner .casilla::after {
+  -webkit-mask: var(--tache-2) center / contain no-repeat;
+  mask: var(--tache-2) center / contain no-repeat;
+  animation: marcar-2 1.6s ease-in-out infinite;
+}
+
+.loading-spinner .casilla:nth-child(2)::before,
+.loading-spinner .casilla:nth-child(2)::after { animation-delay: 0.25s; }
+.loading-spinner .casilla:nth-child(3)::before,
+.loading-spinner .casilla:nth-child(3)::after { animation-delay: 0.5s; }
+.loading-spinner .casilla:nth-child(4)::before,
+.loading-spinner .casilla:nth-child(4)::after { animation-delay: 0.75s; }
+
+/* Tache dibujado a mano: primer trazo \ y segundo trazo /, uno tras otro */
+@keyframes marcar-1 {
+  0% { clip-path: inset(0 100% 0 0); opacity: 1; }
+  18%, 70% { clip-path: inset(0 0 0 0); opacity: 1; }
+  100% { clip-path: inset(0 0 0 0); opacity: 0; }
+}
+
+@keyframes marcar-2 {
+  0%, 18% { clip-path: inset(0 0 0 100%); opacity: 1; }
+  36%, 70% { clip-path: inset(0 0 0 0); opacity: 1; }
+  100% { clip-path: inset(0 0 0 0); opacity: 0; }
+}
+
+/* Mismos trazos para el tache de las casillas de la gráfica (una sola vez) */
+@keyframes trazo-1 {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes trazo-2 {
+  from { clip-path: inset(0 0 0 100%); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* ---------- Pie ---------- */
+.app-footer {
+  background: var(--footer-bg);
+  color: var(--footer-text);
+  padding: 2rem var(--gutter);
+  flex-shrink: 0;
+}
+
+.footer-content {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem 2rem;
+  font-size: var(--font-size-sm);
+}
+
+.footer-left,
+.footer-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1.1rem;
+}
+
+.app-footer a,
+.footer-btn-tour {
+  color: var(--footer-link);
+  text-decoration-color: color-mix(in srgb, var(--footer-link) 40%, transparent);
+}
+
+.app-footer a:hover,
+.footer-btn-tour:hover {
+  color: var(--footer-link);
+  text-decoration-color: var(--accent-pink-light);
+}
+
+.footer-btn-tour {
+  min-height: 40px;
+  padding: 0.25rem 0;
+  font-size: var(--font-size-sm);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.app-footer :focus-visible {
+  outline-color: #8cc8ff;
+}
+
+@media (max-width: 640px) {
+  .top-bar-content {
+    justify-content: space-between;
+  }
+
+  .main-content {
+    padding-top: 1.75rem;
+    padding-bottom: 3rem;
+  }
+
+  .top-bar-content {
+    gap: 0.15rem 0;
+  }
+
+  /* Móvil: logo y tema en la primera fila, enlaces en la segunda.
+     `display: contents` deja que cada control se coloque en la barra. */
+  .top-bar-actions {
+    display: contents;
+  }
+
+  .theme-toggle {
+    order: 2;
+    margin-left: 0;
+  }
+
+  .top-bar-actions .btn-link:not(.theme-toggle) {
+    order: 4;
+    padding-inline: 0;
+    margin-right: 0.9rem;
+  }
+
+  .logo-section {
+    order: 1;
+  }
+
+  .top-bar-content {
+    gap: 0.15rem 0;
+  }
+
+  .btn-primary {
+    width: 100%;
+  }
+
+  .slide-actions .btn-back {
+    flex: 1;
+  }
+
+  .social-buttons {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hoja {
+    box-shadow: 5px 5px 0 var(--sheet-plate);
+  }
+
+  .stat-chip,
+  .stat-chip + .stat-chip {
+    padding: 0.9rem 0;
+    border-left: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .stat-chips {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary:active {
+    transform: none;
+  }
+}
+
+/* La impresión de la ficha educativa vive en FichaEducativa.svelte
+   (una sola hoja carta). Aquí solo se oculta el resto de la app. */
+@media print {
+  .app-wrapper {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .top-progress-fill {
+    transition: none;
+  }
+}
+
+/* ---------- Slide 4: contenido + credencial al lado ---------- */
+.slide-historia {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.historia-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.historia-cabecera,
+.historia-cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.historia-cuerpo {
+  width: 100%;
+  align-items: stretch;
+}
+
+.historia-cuerpo > .slide-actions {
+  align-self: flex-start;
+}
+
+.historia-aside {
+  min-width: 0;
+  padding: 0 8px 8px 0; /* espacio para la placa magenta desfasada */
+}
+
+@media (min-width: 1000px) {
+  /* La credencial va "delante": sale del flujo, anclada arriba a la derecha.
+     Todo el contenido de la izquierda reserva su hueco con un margen, así que
+     nunca queda debajo de ella; si la ventana se angosta, la credencial se achica. */
+  .slide-historia {
+    display: block;
+    position: relative;
+    --cred-w: clamp(280px, 30vw, 38rem);
+  }
+
+  /* Solo titular y entradilla le dejan su hueco a la credencial */
+  .historia-cabecera {
+    padding-right: calc(var(--cred-w) + 2rem);
+  }
+
+  /* De la gráfica para abajo: todo el ancho, bajando lo justo para librarla */
+  .historia-cuerpo {
+    margin-top: var(--cred-hueco, 0px);
+  }
+
+  .historia-aside {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    width: var(--cred-w);
+    padding: 0 8px 8px 0;
+  }
+}
+
+/* Móvil: los botones de acción ocupan todo el ancho de la pantalla */
+@media (max-width: 760px) {
+  .slide-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .slide-actions > button,
+  .slide-actions .btn-primary,
+  .slide-actions .btn-back,
+  .btn-copy-text,
+  .btn-ficha {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
